@@ -1,0 +1,3 @@
+# figuras
+
+Resultados gráficos
