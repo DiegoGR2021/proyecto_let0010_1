@@ -1,0 +1,30 @@
+---
+title: "Análisis de la Rentabilidad Real de los Fondos de Pensiones"
+author: "Diego Gallo"
+format: html
+editor: visual
+---
+
+# **Introducción**
+
+Uno de los aspectos que me resulta más interesante respecto a los polémicos fondos de pensiones en Chile, es su funcionamiento y cómo se ven afectados por acontecimientos tanto internacionales, como los que ocurren en nuestra propia patria, y para eso, necesitamos saber qué son específicamente, los fondos que hay, y las AFP que existen.
+
+# **Contexto**
+
+Las administradoras de fondos de pensiones, o mejor conocidas como A.F.P, son instituciones financieras encargadas de administrar los fondos de cuentas individuales de ahorro para pensiones, entonces corresponden a un patrimonio constituido por todas la cotizaciones obligatorias y voluntarias que efectúan los trabajadores en su cuenta de capitalización individual, más depósitos voluntarios, y aportes adicionales, junto a las rentabilidades de sus respectivas inversiones, restando las comisiones que cobran la administradora.
+
+Existen 5 alternativas de inversión, denominados fondos de pensiones tipo A, B, C, D y E, estos se diferencian en la proporción de los recursos financieros invertidos en renta variable y renta fija, en donde los primeros representan propiedad de una sociedad o empresa, tales como acciones, por ende tienen mayor riesgo y rentabilidad esperada, los segundos tienen una rentabilidad conocida que varía de acuerdo a su valor de mercado, y tienen menor riesgo y menos rentabilidad esperada.
+
+De los 5 fondos antes mencionados, el fondo A tiene una mayor proporción invertida en renta variable, que disminuye a medida que nos acercamos a los fondos B, C, y D, y finalmente el fondo E, invierte principalmente en renta fija.
+
+Actualmente las inversiones se rigen por los siguientes máximos y mínimos para instrumentos de renta variable:
+
+Fondo A: Máximo = 80%, Mínimo obligatorio = 40%
+
+Fondo B: Máximo = 60%, Mínimo obligatorio = 25%
+
+Fondo C: Máximo = 40%, Mínimo obligatorio = 15%
+
+Fondo D: Máximo = 20%, Mínimo obligatorio = 5%
+
+Fondo E: Máximo = 5%, Mínimo obligatorio = 0%. \[1\]
