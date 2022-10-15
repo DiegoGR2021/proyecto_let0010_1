@@ -1,3 +1,10 @@
-# productos
+# Productos
+Productos para el proyecto del ramo LET0010-1
 
-ac√° voy a guardar los informes y las presentaciones
+# Contenidos
+
+- Documentos en formato html o pdf que he generado para el proyecto.
+
+# MÈtodo
+
+- Generados usando Quarto.

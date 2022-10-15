@@ -1,3 +1,8 @@
-# CÃ³digo
+# Código
+Código para el proyecto del ramo LET0010-1
 
-CÃ³digo que usarÃ© para el informe
+# Contenidos carpeta codigo:
+
+- Códigos en formato R.
+- Códigos en formato Python.
+- Archivos/productos temporales de los códigos.
