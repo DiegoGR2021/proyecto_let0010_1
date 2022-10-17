@@ -3,7 +3,7 @@ Proyecto para el ramo LET0010-1
 
 # Contenidos
 
-De momento, este repositorio se encuentra conformado por 4 carpetas enumeradas llamadas: código, datos, figuras y productos:
+Actualmente este repositorio se encuentra conformado por 4 carpetas enumeradas llamadas: código, datos, figuras y productos:
 
 i) codigo : contendrá archivos de formato Python o R, y resultados temporales del código.
 ii) datos : contendrá las bases de datos que usaremos en el proyecto.
