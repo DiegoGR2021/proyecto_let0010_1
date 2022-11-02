@@ -28,3 +28,56 @@ Fondo C: Máximo = 40%, Mínimo obligatorio = 15%
 Fondo D: Máximo = 20%, Mínimo obligatorio = 5%
 
 Fondo E: Máximo = 5%, Mínimo obligatorio = 0%. \[1\]
+
+# **Análisis Exploratorio**
+
+```{r, echo = FALSE}
+library(forecast)
+library(plyr)
+library(rio)
+library(tidyverse)
+
+set.seed(22091998)
+```
+
+
+```{r}
+datos = rio::import("C:/Users/Diego/Desktop/proyecto_let0010_1/datos/30-11-2021_rentabilidad_afps.xlsx")
+retornos_capital_a = datos[datos$A.F.P. == "CAPITAL", ]
+retornos_capital_a = retornos_capital_a[c("A", "Año", "Mes")]
+retornos_capital_a$Mes = plyr::revalue(retornos_capital_a$Mes, c("Enero" = 1, "Febrero" = 2, "Marzo" = 3, "Abril" = 4, "Mayo" = 5, "Junio" = 6, "Julio" = 7, "Agosto" = 8, "Septiembre" = 9, "Octubre" = 10, "Noviembre" = 11, "Diciembre" = 12))
+retornos_capital_a$Mes = as.numeric(retornos_capital_a$Mes)
+retornos_capital_a$Año = as.numeric(retornos_capital_a$Año)
+
+retornos_capital_a$t = retornos_capital_a$Año + (retornos_capital_a$Mes - 1)/12
+new_ret = retornos_capital_a[c("t", "A")]
+
+rm(datos)
+```
+
+
+```{r}
+ggplot(retornos_capital_a, aes(x = t, y = A)) +
+  geom_line() +
+  theme_minimal()
+```
+
+```{r}
+bacf <- acf(c(retornos_capital_a$A, retornos_capital_a$t), plot = FALSE)
+bacfdf <- with(bacf, data.frame(lag, acf))
+
+ggplot(data = bacfdf, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0))
+```
+
+```{r}
+ggAcf(new_ret,
+      lag.max = 20)
+```
+
+```{r}
+ggPacf(new_ret,
+      lag.max = 20)
+```
+
