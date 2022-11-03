@@ -40,8 +40,7 @@ library(tidyverse)
 set.seed(22091998)
 ```
 
-
-```{r}
+```{r, include = FALSE}
 datos = rio::import("C:/Users/Diego/Desktop/proyecto_let0010_1/datos/30-11-2021_rentabilidad_afps.xlsx")
 retornos_capital_a = datos[datos$A.F.P. == "CAPITAL", ]
 retornos_capital_a = retornos_capital_a[c("A", "Año", "Mes")]
@@ -52,32 +51,44 @@ retornos_capital_a$Año = as.numeric(retornos_capital_a$Año)
 retornos_capital_a$t = retornos_capital_a$Año + (retornos_capital_a$Mes - 1)/12
 new_ret = retornos_capital_a[c("t", "A")]
 
+new_rets = arrange(new_ret, t)
+
 rm(datos)
+rm(new_ret)
 ```
 
+Descripción inicial de las variables en el archivo rentabilidad_afps:
+
+| Variable | Tipo            | Descripción          |
+|----------|-----------------|----------------------|
+| A.F.P.   | Cadena de texto | Nombre de la AFP     |
+| A        | Punto flotante  | Rentabilidad Fondo A |
+| B        | Punto flotante  | Rentabilidad Fondo B |
+| C        | Punto flotante  | Rentabilidad Fondo c |
+| D        | Punto flotante  | Rentabilidad Fondo D |
+| E        | Punto flotante  | Rentabilidad Fondo E |
+| Año      | Entero          | Año respectivo       |
+| Mes      | Cadena de texto | Mes respectivo       |
+
+Para la primera revisión de los datos, usaremos particularmente las rentabilidades del Fondo A de AFP Capital, inicialmente nos interesa saber como se comportan sus momentos, y como ha progresado la rentabilidad a lo largo del tiempo, también queremos observar si la serie tiene rasgos estacionarios, y ver si estos se podrían extrapolar a las demás AFPS y fondos.  
 
 ```{r}
 ggplot(retornos_capital_a, aes(x = t, y = A)) +
-  geom_line() +
-  theme_minimal()
+  geom_line(color = "blue") +
+  ggtitle("Figura 1: Retornos mensuales de AFP Capital Fondo A, período 2008-2021") + xlab("Año") + ylab("Retornos")
+```
+
+
+Como podemos observar en la Figura 1, las rentabilidades presentan una alta volatilidad, y parecieran tener una media bastante cercana a 0, también son notorias las caídas en los períodos 2008-2009 y 2020, que calzan con la crisis económica del 2008 y la pandemia COVID. 
+
+
+
+```{r}
+ggAcf(new_rets$A, lag.max = 20) +
+  ggtitle("Figura 2: Autocorrelación de los retornos del Fondo A Capital")
 ```
 
 ```{r}
-bacf <- acf(c(retornos_capital_a$A, retornos_capital_a$t), plot = FALSE)
-bacfdf <- with(bacf, data.frame(lag, acf))
-
-ggplot(data = bacfdf, mapping = aes(x = lag, y = acf)) +
-  geom_hline(aes(yintercept = 0)) +
-  geom_segment(mapping = aes(xend = lag, yend = 0))
+ggPacf(new_rets$A ,lag.max = 20) +
+  ggtitle("Figura 3: Autocorrelación parcial de los retornos del Fondo A Capital")
 ```
-
-```{r}
-ggAcf(new_ret,
-      lag.max = 20)
-```
-
-```{r}
-ggPacf(new_ret,
-      lag.max = 20)
-```
-

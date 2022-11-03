@@ -21,6 +21,69 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -81,6 +144,111 @@ ul.task-list li input[type="checkbox"] {
 <p>Fondo C: Máximo = 40%, Mínimo obligatorio = 15%</p>
 <p>Fondo D: Máximo = 20%, Mínimo obligatorio = 5%</p>
 <p>Fondo E: Máximo = 5%, Mínimo obligatorio = 0%. [1]</p>
+</section>
+<section id="análisis-exploratorio" class="level1">
+<h1><strong>Análisis Exploratorio</strong></h1>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'quantmod':
+  method            from
+  as.zoo.data.frame zoo </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>-- Attaching packages --------------------------------------- tidyverse 1.3.2 --
+v ggplot2 3.3.6     v purrr   0.3.4
+v tibble  3.1.7     v dplyr   1.0.9
+v tidyr   1.2.0     v stringr 1.4.0
+v readr   2.1.2     v forcats 0.5.1
+-- Conflicts ------------------------------------------ tidyverse_conflicts() --
+x dplyr::arrange()   masks plyr::arrange()
+x purrr::compact()   masks plyr::compact()
+x dplyr::count()     masks plyr::count()
+x dplyr::failwith()  masks plyr::failwith()
+x dplyr::filter()    masks stats::filter()
+x dplyr::id()        masks plyr::id()
+x dplyr::lag()       masks stats::lag()
+x dplyr::mutate()    masks plyr::mutate()
+x dplyr::rename()    masks plyr::rename()
+x dplyr::summarise() masks plyr::summarise()
+x dplyr::summarize() masks plyr::summarize()</code></pre>
+</div>
+</div>
+<p>Descripción inicial de las variables en el archivo rentabilidad_afps:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Tipo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A.F.P.</td>
+<td>Cadena de texto</td>
+<td>Nombre de la AFP</td>
+</tr>
+<tr class="even">
+<td>A</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo A</td>
+</tr>
+<tr class="odd">
+<td>B</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo B</td>
+</tr>
+<tr class="even">
+<td>C</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo c</td>
+</tr>
+<tr class="odd">
+<td>D</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo D</td>
+</tr>
+<tr class="even">
+<td>E</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo E</td>
+</tr>
+<tr class="odd">
+<td>Año</td>
+<td>Entero</td>
+<td>Año respectivo</td>
+</tr>
+<tr class="even">
+<td>Mes</td>
+<td>Cadena de texto</td>
+<td>Mes respectivo</td>
+</tr>
+</tbody>
+</table>
+<p>Para la primera revisión de los datos, usaremos particularmente las rentabilidades del Fondo A de AFP Capital, inicialmente nos interesa saber como se comportan sus momentos, y como ha progresado la rentabilidad a lo largo del tiempo, también queremos observar si la serie tiene rasgos estacionarios, y ver si estos se podrían extrapolar a las demás AFPS y fondos.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(retornos_capital_a, <span class="fu">aes</span>(<span class="at">x =</span> t, <span class="at">y =</span> A)) <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Figura 1: Retornos mensuales de AFP Capital Fondo A, período 2008-2021"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Año"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Retornos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Como podemos observar en la Figura 1, las rentabilidades presentan una alta volatilidad, y parecieran tener una media bastante cercana a 0, también son notorias las caídas en los períodos 2008-2009 y 2020, que calzan con la crisis económica del 2008 y la pandemia COVID.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(new_rets<span class="sc">$</span>A, <span class="at">lag.max =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Figura 2: Autocorrelación de los retornos del Fondo A Capital"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggPacf</span>(new_rets<span class="sc">$</span>A ,<span class="at">lag.max =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Figura 3: Autocorrelación parcial de los retornos del Fondo A Capital"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 
 </main>
