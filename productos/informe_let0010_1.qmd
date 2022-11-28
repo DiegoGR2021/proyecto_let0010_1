@@ -31,11 +31,33 @@ Fondo E: Máximo = 5%, Mínimo obligatorio = 0%. \[1\]
 
 # **Análisis Exploratorio**
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, include = FALSE}
+library(egg)
 library(forecast)
+library(ggplot2)
+library(grid)
+library(gridExtra)
 library(plyr)
 library(rio)
 library(tidyverse)
+library(MASS)
+library(moments)
+library(reshape2)
+
+fn = local({
+  lll = 0
+  function(x) {
+    lll <<- lll + 1
+    paste('Figura ', lll, ': ', x, sep = '')
+  }
+})
+
+hist_dens = function(df, col, fignum, xlab = "", main = ""){
+  ggplot(data = df, aes(x = {{col}})) +
+  geom_histogram(aes(y = ..density..), colour = 1, fill = "white") +
+  geom_density() +
+  labs(x = xlab, y = "Densidad", main = paste("Figura ", fignum, ": ", main, sep = ""))
+}
 
 set.seed(22091998)
 ```
@@ -70,25 +92,235 @@ Descripción inicial de las variables en el archivo rentabilidad_afps:
 | Año      | Entero          | Año respectivo       |
 | Mes      | Cadena de texto | Mes respectivo       |
 
-Para la primera revisión de los datos, usaremos particularmente las rentabilidades del Fondo A de AFP Capital, inicialmente nos interesa saber como se comportan sus momentos, y como ha progresado la rentabilidad a lo largo del tiempo, también queremos observar si la serie tiene rasgos estacionarios, y ver si estos se podrían extrapolar a las demás AFPS y fondos.  
+Para la primera revisión de los datos, usaremos particularmente las rentabilidades del Fondo A de AFP Capital, inicialmente nos interesa saber como se comportan sus momentos, y como ha progresado la rentabilidad a lo largo del tiempo, también queremos observar si la serie tiene rasgos estacionarios, y ver si estos se podrían extrapolar a las demás AFPS y fondos.
 
 ```{r}
 ggplot(retornos_capital_a, aes(x = t, y = A)) +
   geom_line(color = "blue") +
-  ggtitle("Figura 1: Retornos mensuales de AFP Capital Fondo A, período 2008-2021") + xlab("Año") + ylab("Retornos")
+  ggtitle(fn("Retornos mensuales de AFP Capital Fondo A, período 2008-2021")) + xlab("Año") + ylab("Retornos")
 ```
 
-
-Como podemos observar en la Figura 1, las rentabilidades presentan una alta volatilidad, y parecieran tener una media bastante cercana a 0, también son notorias las caídas en los períodos 2008-2009 y 2020, que calzan con la crisis económica del 2008 y la pandemia COVID. 
-
-
+Como podemos observar en la Figura 1, las rentabilidades presentan una alta volatilidad, y parecieran tener una media bastante cercana a 0, también son notorias las caídas en los períodos 2008-2009 y 2020, que calzan con la crisis económica del 2008 y la pandemia COVID.
 
 ```{r}
 ggAcf(new_rets$A, lag.max = 20) +
-  ggtitle("Figura 2: Autocorrelación de los retornos del Fondo A Capital")
+  ggtitle(fn("Autocorrelación de los retornos del Fondo A Capital"))
 ```
 
 ```{r}
 ggPacf(new_rets$A ,lag.max = 20) +
-  ggtitle("Figura 3: Autocorrelación parcial de los retornos del Fondo A Capital")
+  ggtitle(fn("Autocorrelación parcial de los retornos del Fondo A Capital"))
+```
+
+```{r}
+ggplot(retornos_capital_a, aes(x = log(A^2))) +
+  geom_histogram(aes(y = ..density..), colour = 1, fill = "white") +
+  geom_density()
+```
+
+```{r}
+rets2 = new_rets$A^2
+ggAcf(log(rets2))
+```
+
+```{r}
+datos2 = rio::import("C:/Users/Diego/Desktop/proyecto_let0010_1/datos/30-11-2021_rentabilidad_afps.xlsx")
+afps = unique(datos2$A.F.P.)
+```
+
+```{r}
+paste("AFP", "A", "B", "C", "D", "E")
+for (i in 1:length(afps)){
+  afp_temp = datos2 %>%
+    filter(A.F.P. == afps[i])
+  print(paste(afps[i], mean(afp_temp$A), mean(afp_temp$B), mean(afp_temp$C), mean(afp_temp$D), mean(afp_temp$E)))
+}
+```
+
+```{r}
+paste("AFP", "N Obs")
+for (i in 1:length(afps)){
+  afp_temp = datos2 %>%
+    filter(A.F.P. == afps[i])
+  print(paste(afps[i], nrow(afp_temp)))
+}
+```
+
+```{r}
+new_afps = subset(datos2, !(A.F.P. %in% c("UNO", "BANSANDER", "SANTA MARIA")))
+afps_new = unique(new_afps$A.F.P.)
+afps_new
+```
+
+```{r}
+paste("AFP", "A", "B", "C", "D", "E")
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+    filter(A.F.P. == afps_new[i])
+  print(paste(afps_new[i], mean(afp_temp$A), mean(afp_temp$B), mean(afp_temp$C), mean(afp_temp$D), mean(afp_temp$E)))
+}
+```
+
+```{r}
+new_afps$Mes = plyr::revalue(new_afps$Mes, c("Enero" = 1, "Febrero" = 2, "Marzo" = 3, "Abril" = 4, "Mayo" = 5, "Junio" = 6, "Julio" = 7, "Agosto" = 8, "Septiembre" = 9, "Octubre" = 10, "Noviembre" = 11, "Diciembre" = 12))
+new_afps$Mes = as.numeric(new_afps$Mes)
+new_afps$Año = as.numeric(new_afps$Año)
+
+new_afps$t = new_afps$Año + (new_afps$Mes - 1)/12
+new_afps_melt = melt(new_afps, id = c("A.F.P.", "Año", "Mes", "t"))
+capital_long = filter(new_afps_melt, A.F.P. == "CAPITAL")
+capital_wide = filter(new_afps, A.F.P. == "CAPITAL")
+```
+
+```{r}
+ggplot(capital_long, aes(x = t, y = value)) +
+  geom_line(aes(color = variable, linetype = variable))
+```
+
+```{r, echo = FALSE}
+a = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = paste("SD: ", sd(capital_wide$A)))
+b = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = B)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = paste("SD: ", sd(capital_wide$B)))
+c = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = C)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = paste("SD: ", sd(capital_wide$C)))
+d = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = D)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = paste("SD: ", sd(capital_wide$D)))
+e = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = paste("SD: ", sd(capital_wide$E)))
+arr = ggarrange(a, b, c, d, e)
+```
+
+```{r}
+e
+```
+
+```{r}
+auto.arima(abs(capital_wide$A))
+```
+
+```{r}
+acf(abs(capital_wide$A))
+```
+
+```{r}
+ggplot(capital_wide, aes(x = log(abs(A)))) +
+  geom_histogram(aes(y = ..density..), colour = 1, fill = "white") +
+  geom_density() +
+  labs(x = "Rentabilidad", y = "Densidad")
+```
+
+```{r}
+kurtosis(capital_wide$A)
+skewness(capital_wide$A)
+```
+
+```{r}
+meses_positivos = data.frame(matrix(ncol = 7, nrow = 7))
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+    filter(A.F.P. == afps_new[i])
+  meses_positivos[i, ] = c(afps_new[i], sum(afp_temp$A > 0), sum(afp_temp$B > 0), sum(afp_temp$C > 0),  sum(afp_temp$D), sum(afp_temp$E > 0), nrow(afp_temp))
+}
+
+colnames(meses_positivos) = c("AFP", "A", "B", "C", "D", "E", "Meses_Totales")
+```
+
+```{r}
+meses_positivos
+```
+
+```{r}
+meses_perc = meses_positivos %>%
+  mutate(A_Perc = as.numeric(A)/as.numeric(Meses_Totales),
+         B_Perc = as.numeric(B)/as.numeric(Meses_Totales),
+         C_Perc = as.numeric(C)/as.numeric(Meses_Totales),
+         D_Perc = as.numeric(D)/as.numeric(Meses_Totales),
+         E_Perc = as.numeric(E)/as.numeric(Meses_Totales))
+```
+
+```{r}
+meses_perc[, c(1, 8:12)]
+```
+
+```{r}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2007) %>%
+  filter(t <= 2010)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = afps_new[i])
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+
+```{r}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2019) %>%
+  filter(t <= 2021)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = afps_new[i], y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+
+```{r}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2020)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = afps_new[i], y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+
+```{r}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2007) %>%
+  filter(t <= 2010)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = afps_new[i], y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+
+```{r}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2019) %>%
+  filter(t <= 2021)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = afps_new[i])
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+
+```{r}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2020)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = afps_new[i], y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
 ```
