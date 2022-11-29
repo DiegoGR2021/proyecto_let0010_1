@@ -145,32 +145,36 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Fondo D: Máximo = 20%, Mínimo obligatorio = 5%</p>
 <p>Fondo E: Máximo = 5%, Mínimo obligatorio = 0%. [1]</p>
 </section>
+<section id="objetivos" class="level1">
+<h1><strong>Objetivos</strong></h1>
+<p>Ahora conociendo el contexto de las AFP, y sus rasgos generales de inversión, podemos plantearnos las siguientes preguntas:</p>
+<p>¿Cuál de las AFP presenta mejores resultados?.</p>
+<p>¿Qué tanto afectó a las AFP la crisis subprime del 2008?.</p>
+<p>¿Qué tan mal dejó a las AFP el terremoto del 2010?.</p>
+<p>¿Cómo se vieron afectadas las rentabilidades de las AFP por el estallido social ocurrido en octubre de 2019?.</p>
+<p>¿Cómo ha afectado la pandemia del 2020 a las rentabilidades de las AFP?, ¿Fue negativo el impacto?.</p>
+<p>¿Qué fondos se ven menos afectados por los problemas nacionales?.</p>
+<p>¿Qué fondos se ven menos afectados por problemáticas internacionales?.</p>
+<p>Entonces además de observar el rendimiento de los distintos fondos y las distintas AFP, vamos a verlo en perspectiva histórica, para observar como se comporta su rentabilidad a lo largo de los años, haciendo énfasis en algunos años clave.</p>
+</section>
+<section id="datos" class="level1">
+<h1><strong>Datos</strong></h1>
+<p>Desde la página de la superintendencia de pensiones, podemos encontrar una serie de tablas con las rentabilidades de los distintos tipos de fondos, y tipos de AFP, los cuales podemos seleccionar por mes y año, desde el año 2005 hasta hoy, para motivos de mi informe, desecharé el año 2005 ya que tiene demasiados valores faltantes.</p>
+<p>Para poder comenzar, ya que la página no nos permite descargar ningún documento con los datos y además todas las selecciones cuentan con la misma url, usando “web-scraping”, obtendremos los datos de la primera y segunda columna de cada tabla, pues contienen el nombre de la AFP y su rentabilidad obtenida es mes y año respectivos, por ende haciendo uso de Python, y con ayuda de los paquetes (BeautifulSoup, Chromedriver, Selenium, Pandas, Time).</p>
+<p>Debido a la gran cantidad de iteraciones que debe hacer el documento, no lo incluiré de manera funcional en el informe, el link se puede encontrar en el anexo.</p>
+<p>Así ya disponemos de una base de datos que podemos importar, he sido cuidadoso a la hora de definir los tipos de cada variable, guardar los números en formato float, y variables categóricas como string, también reemplacé las comas por puntos, datos vacíos por 0.0 (float) y eliminé los símbolos %, por lo que no será necesario limpiar los datos.</p>
+<p>A la hora de hacer el análisis, se filtrarán los datos según se requiera, y se eliminaran AFPs con pocas observaciones y se usarán fondos representativos de ser necesarios.</p>
+</section>
 <section id="análisis-exploratorio" class="level1">
 <h1><strong>Análisis Exploratorio</strong></h1>
+<p>Analizamos la correlación entre los valores de los distintos fondos, y podemos ver que los fondos que menos se parecen respecto a rentabilidades, son el A y el E, pues tienen una correlación bajísima, lo cuál es lógico, ya que sus niveles de riesgo y sus objetivos son muy distintos, así, en base a estos dos fondos, haré la mayor parte del análisis ya que son los que representan el blanco y el negro en las AFP.</p>
+<p>Ahora estamos en condiciones de zambullirnos y solucionar nuestras anécdotas:</p>
+<p>De los dos fondos anteriormente mencionados, al tener niveles de riesgo muy distintos, el fondo A debería reportar muchas mas ganancias que el fondo E, el cual es más conservador, entonces los comparamos usando una AFP cualquiera:</p>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Registered S3 method overwritten by 'quantmod':
-  method            from
-  as.zoo.data.frame zoo </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>-- Attaching packages --------------------------------------- tidyverse 1.3.2 --
-v ggplot2 3.3.6     v purrr   0.3.4
-v tibble  3.1.7     v dplyr   1.0.9
-v tidyr   1.2.0     v stringr 1.4.0
-v readr   2.1.2     v forcats 0.5.1
--- Conflicts ------------------------------------------ tidyverse_conflicts() --
-x dplyr::arrange()   masks plyr::arrange()
-x purrr::compact()   masks plyr::compact()
-x dplyr::count()     masks plyr::count()
-x dplyr::failwith()  masks plyr::failwith()
-x dplyr::filter()    masks stats::filter()
-x dplyr::id()        masks plyr::id()
-x dplyr::lag()       masks stats::lag()
-x dplyr::mutate()    masks plyr::mutate()
-x dplyr::rename()    masks plyr::rename()
-x dplyr::summarise() masks plyr::summarise()
-x dplyr::summarize() masks plyr::summarize()</code></pre>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colMeans</span>(datos[, <span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        A         B         C         D         E 
+0.4725037 0.4141729 0.3543294 0.2714232 0.2139568 </code></pre>
 </div>
 </div>
 <p>Descripción inicial de las variables en el archivo rentabilidad_afps:</p>
@@ -229,26 +233,362 @@ x dplyr::summarize() masks plyr::summarize()</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(retornos_capital_a, <span class="fu">aes</span>(<span class="at">x =</span> t, <span class="at">y =</span> A)) <span class="sc">+</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Figura 1: Retornos mensuales de AFP Capital Fondo A, período 2008-2021"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Año"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Retornos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="fu">fn</span>(<span class="st">"Retornos mensuales de AFP Capital Fondo A, período 2008-2021"</span>)) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Año"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Retornos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Como podemos observar en la Figura 1, las rentabilidades presentan una alta volatilidad, y parecieran tener una media bastante cercana a 0, también son notorias las caídas en los períodos 2008-2009 y 2020, que calzan con la crisis económica del 2008 y la pandemia COVID.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(new_rets<span class="sc">$</span>A, <span class="at">lag.max =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Figura 2: Autocorrelación de los retornos del Fondo A Capital"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="fu">fn</span>(<span class="st">"Autocorrelación de los retornos del Fondo A Capital"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggPacf</span>(new_rets<span class="sc">$</span>A ,<span class="at">lag.max =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Figura 3: Autocorrelación parcial de los retornos del Fondo A Capital"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="fu">fn</span>(<span class="st">"Autocorrelación parcial de los retornos del Fondo A Capital"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(retornos_capital_a, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(A<span class="sc">^</span><span class="dv">2</span>))) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">y =</span> ..density..), <span class="at">colour =</span> <span class="dv">1</span>, <span class="at">fill =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.
+i Please use `after_stat(density)` instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_density()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rets2 <span class="ot">=</span> new_rets<span class="sc">$</span>A<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(<span class="fu">log</span>(rets2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 22 rows containing missing values (`geom_segment()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>datos2 <span class="ot">=</span> rio<span class="sc">::</span><span class="fu">import</span>(<span class="st">"C:/Users/Diego/Desktop/proyecto_let0010_1/datos/30-11-2021_rentabilidad_afps.xlsx"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>afps <span class="ot">=</span> <span class="fu">unique</span>(datos2<span class="sc">$</span>A.F.P.)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"AFP"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"E"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "AFP A B C D E"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps)){</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> datos2 <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps[i])</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(afps[i], <span class="fu">mean</span>(afp_temp<span class="sc">$</span>A), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>B), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>C), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>D), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>E)))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CAPITAL 0.400606060606061 0.353454545454545 0.319636363636364 0.247757575757576 0.224242424242424"
+[1] "CUPRUM 0.453489583333333 0.401979166666667 0.365364583333333 0.286354166666667 0.232447916666667"
+[1] "HABITAT 0.481145833333333 0.4384375 0.397447916666667 0.3140625 0.26140625"
+[1] "MODELO 0.465147058823529 0.383676470588235 0.302794117647059 0.240220588235294 0.176029411764706"
+[1] "PLANVITAL 0.45890625 0.403802083333333 0.34625 0.262395833333333 0.192552083333333"
+[1] "PROVIDA 0.456302083333333 0.398020833333333 0.33859375 0.267760416666667 0.20453125"
+[1] "UNO 0.675185185185185 0.455555555555556 0.08 -0.242962962962963 -0.504444444444444"
+[1] "SISTEMA 0.4609375 0.41046875 0.362604166666667 0.28375 0.236822916666667"
+[1] "BANSANDER 0.828518518518519 0.717407407407407 0.585925925925926 0.469259259259259 0.461851851851852"
+[1] "SANTA MARIA 0.758148148148148 0.723333333333333 0.594074074074074 0.482962962962963 0.40037037037037"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"AFP"</span>, <span class="st">"N Obs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "AFP N Obs"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps)){</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> datos2 <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps[i])</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(afps[i], <span class="fu">nrow</span>(afp_temp)))</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CAPITAL 165"
+[1] "CUPRUM 192"
+[1] "HABITAT 192"
+[1] "MODELO 136"
+[1] "PLANVITAL 192"
+[1] "PROVIDA 192"
+[1] "UNO 27"
+[1] "SISTEMA 192"
+[1] "BANSANDER 27"
+[1] "SANTA MARIA 27"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>new_afps <span class="ot">=</span> <span class="fu">subset</span>(datos2, <span class="sc">!</span>(A.F.P. <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"UNO"</span>, <span class="st">"BANSANDER"</span>, <span class="st">"SANTA MARIA"</span>)))</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>afps_new <span class="ot">=</span> <span class="fu">unique</span>(new_afps<span class="sc">$</span>A.F.P.)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>afps_new</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CAPITAL"   "CUPRUM"    "HABITAT"   "MODELO"    "PLANVITAL" "PROVIDA"  
+[7] "SISTEMA"  </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"AFP"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"E"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "AFP A B C D E"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i])</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(afps_new[i], <span class="fu">mean</span>(afp_temp<span class="sc">$</span>A), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>B), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>C), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>D), <span class="fu">mean</span>(afp_temp<span class="sc">$</span>E)))</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CAPITAL 0.400606060606061 0.353454545454545 0.319636363636364 0.247757575757576 0.224242424242424"
+[1] "CUPRUM 0.453489583333333 0.401979166666667 0.365364583333333 0.286354166666667 0.232447916666667"
+[1] "HABITAT 0.481145833333333 0.4384375 0.397447916666667 0.3140625 0.26140625"
+[1] "MODELO 0.465147058823529 0.383676470588235 0.302794117647059 0.240220588235294 0.176029411764706"
+[1] "PLANVITAL 0.45890625 0.403802083333333 0.34625 0.262395833333333 0.192552083333333"
+[1] "PROVIDA 0.456302083333333 0.398020833333333 0.33859375 0.267760416666667 0.20453125"
+[1] "SISTEMA 0.4609375 0.41046875 0.362604166666667 0.28375 0.236822916666667"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>new_afps<span class="sc">$</span>Mes <span class="ot">=</span> plyr<span class="sc">::</span><span class="fu">revalue</span>(new_afps<span class="sc">$</span>Mes, <span class="fu">c</span>(<span class="st">"Enero"</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">"Febrero"</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">"Marzo"</span> <span class="ot">=</span> <span class="dv">3</span>, <span class="st">"Abril"</span> <span class="ot">=</span> <span class="dv">4</span>, <span class="st">"Mayo"</span> <span class="ot">=</span> <span class="dv">5</span>, <span class="st">"Junio"</span> <span class="ot">=</span> <span class="dv">6</span>, <span class="st">"Julio"</span> <span class="ot">=</span> <span class="dv">7</span>, <span class="st">"Agosto"</span> <span class="ot">=</span> <span class="dv">8</span>, <span class="st">"Septiembre"</span> <span class="ot">=</span> <span class="dv">9</span>, <span class="st">"Octubre"</span> <span class="ot">=</span> <span class="dv">10</span>, <span class="st">"Noviembre"</span> <span class="ot">=</span> <span class="dv">11</span>, <span class="st">"Diciembre"</span> <span class="ot">=</span> <span class="dv">12</span>))</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>new_afps<span class="sc">$</span>Mes <span class="ot">=</span> <span class="fu">as.numeric</span>(new_afps<span class="sc">$</span>Mes)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>new_afps<span class="sc">$</span>Año <span class="ot">=</span> <span class="fu">as.numeric</span>(new_afps<span class="sc">$</span>Año)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>new_afps<span class="sc">$</span>t <span class="ot">=</span> new_afps<span class="sc">$</span>Año <span class="sc">+</span> (new_afps<span class="sc">$</span>Mes <span class="sc">-</span> <span class="dv">1</span>)<span class="sc">/</span><span class="dv">12</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>new_afps_melt <span class="ot">=</span> <span class="fu">melt</span>(new_afps, <span class="at">id =</span> <span class="fu">c</span>(<span class="st">"A.F.P."</span>, <span class="st">"Año"</span>, <span class="st">"Mes"</span>, <span class="st">"t"</span>))</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>capital_long <span class="ot">=</span> <span class="fu">filter</span>(new_afps_melt, A.F.P. <span class="sc">==</span> <span class="st">"CAPITAL"</span>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>capital_wide <span class="ot">=</span> <span class="fu">filter</span>(new_afps, A.F.P. <span class="sc">==</span> <span class="st">"CAPITAL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(capital_long, <span class="fu">aes</span>(<span class="at">x =</span> t, <span class="at">y =</span> value)) <span class="sc">+</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">color =</span> variable, <span class="at">linetype =</span> variable)) <span class="sc">+</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">fn</span>(<span class="st">""</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>adding dummy grobs</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">auto.arima</span>(<span class="fu">abs</span>(capital_wide<span class="sc">$</span>A))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Series: abs(capital_wide$A) 
+ARIMA(1,0,0) with non-zero mean 
+
+Coefficients:
+         ar1    mean
+      0.2492  2.7439
+s.e.  0.0754  0.2772
+
+sigma^2 = 7.262:  log likelihood = -396.72
+AIC=799.44   AICc=799.59   BIC=808.76</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(<span class="fu">abs</span>(capital_wide<span class="sc">$</span>A))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(capital_wide, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(<span class="fu">abs</span>(A)))) <span class="sc">+</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">y =</span> ..density..), <span class="at">colour =</span> <span class="dv">1</span>, <span class="at">fill =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>() <span class="sc">+</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Rentabilidad"</span>, <span class="at">y =</span> <span class="st">"Densidad"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_density()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kurtosis</span>(capital_wide<span class="sc">$</span>A)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 9.026759</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skewness</span>(capital_wide<span class="sc">$</span>A)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -1.323489</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>meses_positivos <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">matrix</span>(<span class="at">ncol =</span> <span class="dv">7</span>, <span class="at">nrow =</span> <span class="dv">7</span>))</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i])</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  meses_positivos[i, ] <span class="ot">=</span> <span class="fu">c</span>(afps_new[i], <span class="fu">sum</span>(afp_temp<span class="sc">$</span>A <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="fu">sum</span>(afp_temp<span class="sc">$</span>B <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="fu">sum</span>(afp_temp<span class="sc">$</span>C <span class="sc">&gt;</span> <span class="dv">0</span>),  <span class="fu">sum</span>(afp_temp<span class="sc">$</span>D), <span class="fu">sum</span>(afp_temp<span class="sc">$</span>E <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="fu">nrow</span>(afp_temp))</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(meses_positivos) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"AFP"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"E"</span>, <span class="st">"Meses_Totales"</span>)</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>meses_positivos</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        AFP   A   B   C     D   E Meses_Totales
+1   CAPITAL  91  89  98 40.88 107           165
+2    CUPRUM 109 111 116 54.98 128           192
+3   HABITAT 109 109 115  60.3 132           192
+4    MODELO  75  74  75 32.67  90           136
+5 PLANVITAL 108 109 115 50.38 126           192
+6   PROVIDA 107 108 117 51.41 127           192
+7   SISTEMA 109 110 116 54.48 129           192</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>meses_perc <span class="ot">=</span> meses_positivos <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">A_Perc =</span> <span class="fu">as.numeric</span>(A)<span class="sc">/</span><span class="fu">as.numeric</span>(Meses_Totales),</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">B_Perc =</span> <span class="fu">as.numeric</span>(B)<span class="sc">/</span><span class="fu">as.numeric</span>(Meses_Totales),</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">C_Perc =</span> <span class="fu">as.numeric</span>(C)<span class="sc">/</span><span class="fu">as.numeric</span>(Meses_Totales),</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">D_Perc =</span> <span class="fu">as.numeric</span>(D)<span class="sc">/</span><span class="fu">as.numeric</span>(Meses_Totales),</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">E_Perc =</span> <span class="fu">as.numeric</span>(E)<span class="sc">/</span><span class="fu">as.numeric</span>(Meses_Totales))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>meses_perc[, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">8</span><span class="sc">:</span><span class="dv">12</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        AFP    A_Perc    B_Perc    C_Perc    D_Perc    E_Perc
+1   CAPITAL 0.5515152 0.5393939 0.5939394 0.2477576 0.6484848
+2    CUPRUM 0.5677083 0.5781250 0.6041667 0.2863542 0.6666667
+3   HABITAT 0.5677083 0.5677083 0.5989583 0.3140625 0.6875000
+4    MODELO 0.5514706 0.5441176 0.5514706 0.2402206 0.6617647
+5 PLANVITAL 0.5625000 0.5677083 0.5989583 0.2623958 0.6562500
+6   PROVIDA 0.5572917 0.5625000 0.6093750 0.2677604 0.6614583
+7   SISTEMA 0.5677083 0.5729167 0.6041667 0.2837500 0.6718750</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>arr_temp <span class="ot">=</span> <span class="fu">list</span>()</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i]) <span class="sc">%&gt;%</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&gt;=</span> <span class="dv">2007</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&lt;=</span> <span class="dv">2010</span>)</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  plot_temp <span class="ot">=</span> <span class="fu">ggplot</span>(afp_temp, <span class="fu">aes</span>(<span class="at">x =</span> t)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> A)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">fn</span>(afps_new[i]))</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  arr_temp[[i]] <span class="ot">=</span> plot_temp</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(grid.arrange, arr_temp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>arr_temp <span class="ot">=</span> <span class="fu">list</span>()</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i]) <span class="sc">%&gt;%</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&gt;=</span> <span class="dv">2019</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&lt;=</span> <span class="dv">2021</span>)</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  plot_temp <span class="ot">=</span> <span class="fu">ggplot</span>(afp_temp, <span class="fu">aes</span>(<span class="at">x =</span> t)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> A)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">fn</span>(afps_new[i]), <span class="at">y =</span> <span class="st">""</span>)</span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  arr_temp[[i]] <span class="ot">=</span> plot_temp</span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(grid.arrange, arr_temp) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>arr_temp <span class="ot">=</span> <span class="fu">list</span>()</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i]) <span class="sc">%&gt;%</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&gt;=</span> <span class="dv">2020</span>)</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  plot_temp <span class="ot">=</span> <span class="fu">ggplot</span>(afp_temp, <span class="fu">aes</span>(<span class="at">x =</span> t)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> A)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">fn</span>(afps_new[i]), <span class="at">y =</span> <span class="st">""</span>)</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  arr_temp[[i]] <span class="ot">=</span> plot_temp</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(grid.arrange, arr_temp) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>arr_temp <span class="ot">=</span> <span class="fu">list</span>()</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i]) <span class="sc">%&gt;%</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&gt;=</span> <span class="dv">2007</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&lt;=</span> <span class="dv">2010</span>)</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  plot_temp <span class="ot">=</span> <span class="fu">ggplot</span>(afp_temp, <span class="fu">aes</span>(<span class="at">x =</span> t)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> E)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">fn</span>(afps_new[i]), <span class="at">y =</span> <span class="st">""</span>)</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>  arr_temp[[i]] <span class="ot">=</span> plot_temp</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(grid.arrange, arr_temp) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>arr_temp <span class="ot">=</span> <span class="fu">list</span>()</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i]) <span class="sc">%&gt;%</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&gt;=</span> <span class="dv">2019</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&lt;=</span> <span class="dv">2021</span>)</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  plot_temp <span class="ot">=</span> <span class="fu">ggplot</span>(afp_temp, <span class="fu">aes</span>(<span class="at">x =</span> t)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> E)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">fn</span>(afps_new[i]))</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>  arr_temp[[i]] <span class="ot">=</span> plot_temp</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(grid.arrange, arr_temp) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>arr_temp <span class="ot">=</span> <span class="fu">list</span>()</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afps_new)){</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  afp_temp <span class="ot">=</span> new_afps <span class="sc">%&gt;%</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(A.F.P. <span class="sc">==</span> afps_new[i]) <span class="sc">%&gt;%</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(t <span class="sc">&gt;=</span> <span class="dv">2020</span>)</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  plot_temp <span class="ot">=</span> <span class="fu">ggplot</span>(afp_temp, <span class="fu">aes</span>(<span class="at">x =</span> t)) <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> E)) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">fn</span>(afps_new[i]), <span class="at">y =</span> <span class="st">""</span>)</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  arr_temp[[i]] <span class="ot">=</span> plot_temp</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="fu">do.call</span>(grid.arrange, arr_temp) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+</section>
+<section id="resultados" class="level1">
+<h1><strong>Resultados</strong></h1>
+</section>
+<section id="conclusión" class="level1">
+<h1><strong>Conclusión</strong></h1>
+<p>Luego de haber analizado los gráficos, podemos concluir que en su mayoría, las crisis internacionales afectan muy negativamente al fondo A, mientras que los sucesos que ocurren en nuestro país, no generan mucho efecto en sus rentabilidades, lo que es contrario al fondo E, que es muy reactivo a las tragedias nacionales, además podemos observar la gran diferencia de ganancias que hay entre ambos fondos, ya que a pesar de tener pérdidas exageradas, el fondo A siempre logra recuperarse, y los años que han resultado terribles para este, sin incluir la crisis financiera, simplemente lo han dejado sin ganancias, o con unas pérdidas que no superan al 5%, esto nos da información importante para decidir el nivel de riesgo a elegir en un fondo, ya que mientras superior sea el lapso de tiempo, mayor es la diferencia de rentabilidades que hay, y que a pesar de que las cosas no estén bien en el país, podemos seguir aumentando nuestro patrimonio.</p>
+<p>Sobre los AFPs en particular, no es muy relevante cual, ya que las comisiones no son tan altas, y en fondos similares, la mayoría reportan cantidades de meses positivos similares, y ganancias relativamente parecidas, así que no son tan relevantes para nuestro caso.</p>
+<p>Dando un último vistazo a los gráficos, ya que analizamos la correlación entre los dos fondos, esto se puede observar en la diferencia de variabilidad de los dos datos, ya que son gráficos parecidos, donde el fondo A tiene movimientos mucho más bruscos, y erráticos, mientras que el fondo E representa una versión mucho más pareja de la curva, con menos fluctuaciones.</p>
+</section>
+<section id="anexo" class="level1">
+<h1><strong>Anexo</strong></h1>
+<p>[1] <a href="https://afiliadoinformado.cl/wp-content/uploads/2018/06/12_FondodePensiones.pdf">Fondo de Pensiones</a></p>
+<p>[2] <a href="https://www.spensiones.cl/apps/rentabilidad/getRentabilidad.php?tiprent=FP&amp;template=0">Rentabilidades</a></p>
+<p>[3] <a href="https://github.com/DiegoGR2021/proyecto_let0010_1/blob/main/codigo/web_scraperdef.py">Web-Scraping</a></p>
 </section>
 
 </main>
