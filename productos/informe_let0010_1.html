@@ -35,6 +35,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="informe_let0010_1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="informe_let0010_1_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -80,7 +81,292 @@ ul.task-list li input[type="checkbox"] {
 <p>Fondo B: Máximo = 60%, Mínimo obligatorio = 25%</p>
 <p>Fondo C: Máximo = 40%, Mínimo obligatorio = 15%</p>
 <p>Fondo D: Máximo = 20%, Mínimo obligatorio = 5%</p>
-<p>Fondo E: Máximo = 5%, Mínimo obligatorio = 0%. [1]</p>
+<p>Fondo E: Máximo = 5%, Mínimo obligatorio = 0%</p>
+</section>
+<section id="objetivos" class="level1">
+<h1><strong>Objetivos</strong></h1>
+<p>Ahora conociendo el contexto de las AFP, y sus rasgos generales de inversión, podemos plantearnos las siguientes preguntas:</p>
+<p>¿Cuál de las AFP presenta mejores resultados?.</p>
+<p>¿Qué tanto afectó a las AFP la crisis subprime del 2008?.</p>
+<p>¿Qué tan mal dejó a las AFP el terremoto del 2010?.</p>
+<p>¿Cómo se vieron afectadas las rentabilidades de las AFP por el estallido social ocurrido en octubre de 2019?.</p>
+<p>¿Cómo ha afectado la pandemia del 2020 a las rentabilidades de las AFP?, ¿Fue negativo el impacto?.</p>
+<p>¿Qué fondos se ven menos afectados por los problemas nacionales?.</p>
+<p>¿Qué fondos se ven menos afectados por problemáticas internacionales?.</p>
+<p>Entonces además de observar el rendimiento de los distintos fondos y las distintas AFP, vamos a verlo en perspectiva histórica, para observar como se comporta su rentabilidad a lo largo de los años, haciendo énfasis en algunos años clave.</p>
+</section>
+<section id="datos" class="level1">
+<h1><strong>Datos</strong></h1>
+<p>Desde la página de la superintendencia de pensiones, podemos encontrar una serie de tablas con las rentabilidades de los distintos tipos de fondos, y tipos de AFP, los cuales podemos seleccionar por mes y año, desde el año 2005 hasta hoy, para motivos de mi informe, desecharé el año 2005 ya que tiene demasiados valores faltantes.</p>
+<p>Para poder comenzar, ya que la página no nos permite descargar ningún documento con los datos y además todas las selecciones cuentan con la misma url, usando “web-scraping”, obtendremos los datos de la primera y segunda columna de cada tabla, pues contienen el nombre de la AFP y su rentabilidad obtenida es mes y año respectivos, por ende haciendo uso de Python, y con ayuda de los paquetes (BeautifulSoup, Chromedriver, Selenium, Pandas, Time).</p>
+<p>Debido a la gran cantidad de iteraciones que debe hacer el documento, no lo incluiré de manera funcional en el informe, el link se puede encontrar en el anexo.</p>
+<p>Así ya disponemos de una base de datos que podemos importar, he sido cuidadoso a la hora de definir los tipos de cada variable, guardar los números en formato float, y variables categóricas como string, también reemplacé las comas por puntos, datos vacíos por 0.0 (float) y eliminé los símbolos %, por lo que no será necesario limpiar los datos.</p>
+<p>A la hora de hacer el análisis, se filtrarán los datos según se requiera, y se eliminaran AFPs con pocas observaciones y se usarán fondos representativos de ser necesarios.</p>
+<p>Descripción inicial de las variables en el archivo rentabilidad_afps:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Tipo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A.F.P.</td>
+<td>Cadena de texto</td>
+<td>Nombre de la AFP</td>
+</tr>
+<tr class="even">
+<td>A</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo A</td>
+</tr>
+<tr class="odd">
+<td>B</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo B</td>
+</tr>
+<tr class="even">
+<td>C</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo c</td>
+</tr>
+<tr class="odd">
+<td>D</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo D</td>
+</tr>
+<tr class="even">
+<td>E</td>
+<td>Punto flotante</td>
+<td>Rentabilidad Fondo E</td>
+</tr>
+<tr class="odd">
+<td>Año</td>
+<td>Entero</td>
+<td>Año respectivo</td>
+</tr>
+<tr class="even">
+<td>Mes</td>
+<td>Cadena de texto</td>
+<td>Mes respectivo</td>
+</tr>
+</tbody>
+</table>
+<p>Además, sea <span class="math inline">\(X_t\)</span> el valor del fondo en el momento t, tenemos que la rentabilidad porcentual es equivalente a :</p>
+<p><span class="math display">\[ \frac{X_t - X_{t-1}}{X_{t-1}} \]</span></p>
+</section>
+<section id="resultados" class="level1">
+<h1><strong>Resultados</strong></h1>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>          A         B         C         D         E
+A 1.0000000 0.9902175 0.9178465 0.6795558 0.1494451
+B 0.9902175 1.0000000 0.9601701 0.7603196 0.2535628
+C 0.9178465 0.9601701 1.0000000 0.9052465 0.4850150
+D 0.6795558 0.7603196 0.9052465 1.0000000 0.7886666
+E 0.1494451 0.2535628 0.4850150 0.7886666 1.0000000</code></pre>
+</div>
+</div>
+<p>Analizamos la correlación entre los valores de los distintos fondos, y podemos ver que los fondos que menos se parecen respecto a rentabilidades, son el A y el E, pues tienen una correlación bajísima, lo cuál es lógico, ya que sus niveles de riesgo y sus objetivos son muy distintos, así, en base a estos dos fondos, haré la mayor parte del análisis ya que son los que representan el blanco y el negro en las AFP.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>       A        B        C        D        E 
+3.849365 2.896921 2.085363 1.582981 1.309632 </code></pre>
+</div>
+</div>
+<p>Consistente con los supuestos de la introducción, los fondos con más renta variable presentan mayor desviación estándar, y el fondo E tiene variabilidad mínima.</p>
+<p>Para la primera revisión de los datos, usaremos particularmente las rentabilidades del Fondo A de AFP Capital, inicialmente nos interesa saber como se comportan sus momentos, y como ha progresado la rentabilidad a lo largo del tiempo, también queremos observar si la serie tiene rasgos estacionarios, y ver si estos se podrían extrapolar a las demás AFPS y fondos.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<p>Como podemos observar en la Figura 1, las rentabilidades presentan una alta volatilidad, y parecieran tener una media bastante cercana a 0, también son notorias las caídas en los períodos 2008-2009 y 2020, que calzan con la crisis económica del 2008 y la pandemia COVID.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Tenemos que los datos no tienen una estructura de correlación notoria, lo que es habitual en los datos financieros, por lo que es necesario analizar los retornos al cuadrado:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Se puede observar una estructura de correlación, pero no tenemos suficiente evidencia como para sacar alguna conclusión, ahora es importante analizar si es que los datos tienen alguna distribución en particular, y como se comportan sus momentos:</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.
+i Please use `after_stat(density)` instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Observamos una distribución con ciertos indicios de normalidad, pero con un sesgo muy marcado,, y probablemente altos niveles de kurtosis, ya que las colas representan mucho % de la figura, por lo que la normalidad de las rentabilidades está descartada, para ajustar un modelo probablemente sea necesario hacer transformaciones o cambiar el enfoque del análisis.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "AFP A B C D E"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CAPITAL 0.400606060606061 0.353454545454545 0.319636363636364 0.247757575757576 0.224242424242424"
+[1] "CUPRUM 0.453489583333333 0.401979166666667 0.365364583333333 0.286354166666667 0.232447916666667"
+[1] "HABITAT 0.481145833333333 0.4384375 0.397447916666667 0.3140625 0.26140625"
+[1] "MODELO 0.465147058823529 0.383676470588235 0.302794117647059 0.240220588235294 0.176029411764706"
+[1] "PLANVITAL 0.45890625 0.403802083333333 0.34625 0.262395833333333 0.192552083333333"
+[1] "PROVIDA 0.456302083333333 0.398020833333333 0.33859375 0.267760416666667 0.20453125"
+[1] "UNO 0.675185185185185 0.455555555555556 0.08 -0.242962962962963 -0.504444444444444"
+[1] "SISTEMA 0.4609375 0.41046875 0.362604166666667 0.28375 0.236822916666667"
+[1] "BANSANDER 0.828518518518519 0.717407407407407 0.585925925925926 0.469259259259259 0.461851851851852"
+[1] "SANTA MARIA 0.758148148148148 0.723333333333333 0.594074074074074 0.482962962962963 0.40037037037037"</code></pre>
+</div>
+</div>
+<p>En la tabla anterior tenemos los retornos promedios de cada AFP en cada fondo, y tenemos algunos datos anormales, BANSANDER, UNO, SANTA MARIA, ya que tienen rentabilidades demasiado altas en comparación al resto de las AFP, y el resto no presenta muchas diferencias significativas, se ve que sus rentabilidades están en un rango bastante común.</p>
+<p>Otra medida importante con la que podemos comparar fondos, es su cantidad de meses positivos sobre los meses totales que ejercieron, así primero obtenemos los meses que ejercieron cada AFP:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "AFP N Obs"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CAPITAL 165"
+[1] "CUPRUM 192"
+[1] "HABITAT 192"
+[1] "MODELO 136"
+[1] "PLANVITAL 192"
+[1] "PROVIDA 192"
+[1] "UNO 27"
+[1] "SISTEMA 192"
+[1] "BANSANDER 27"
+[1] "SANTA MARIA 27"</code></pre>
+</div>
+</div>
+<p>Inmediatamente descartamos Bansander y Santa Maria, ya que están discontinuadas, tampoco ejercieron por mucho tiempo, por lo que podrían haber estado funcionando en años donde les fue mal a todas, y haber esquivado algunas crisis, haremos lo mismo con AFP UNO, puesto que tenemos muy pocos datos en comparación a las demás.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "AFP     A     B      C      D      E"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "CAPITAL 0.400606060606061 0.353454545454545 0.319636363636364 0.247757575757576 0.224242424242424"
+[1] "CUPRUM 0.453489583333333 0.401979166666667 0.365364583333333 0.286354166666667 0.232447916666667"
+[1] "HABITAT 0.481145833333333 0.4384375 0.397447916666667 0.3140625 0.26140625"
+[1] "MODELO 0.465147058823529 0.383676470588235 0.302794117647059 0.240220588235294 0.176029411764706"
+[1] "PLANVITAL 0.45890625 0.403802083333333 0.34625 0.262395833333333 0.192552083333333"
+[1] "PROVIDA 0.456302083333333 0.398020833333333 0.33859375 0.267760416666667 0.20453125"
+[1] "SISTEMA 0.4609375 0.41046875 0.362604166666667 0.28375 0.236822916666667"</code></pre>
+</div>
+</div>
+<p>Ahora con las tablas más limpias, vemos que tienen resultados bastante similares las AFPS entre sí, y seguimos con tendencias muy similares a las observadas inicialmente, menores rentabilidades en los fondos más bajos, y mayores en los más altos.</p>
+<p>Para el resto del análisis, usaremos AFP Capital, para evitar redundancia.</p>
+<div class="cell">
+
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>adding dummy grobs</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_density()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>        AFP   A   B   C     D   E Meses_Totales
+1   CAPITAL  91  89  98 40.88 107           165
+2    CUPRUM 109 111 116 54.98 128           192
+3   HABITAT 109 109 115  60.3 132           192
+4    MODELO  75  74  75 32.67  90           136
+5 PLANVITAL 108 109 115 50.38 126           192
+6   PROVIDA 107 108 117 51.41 127           192
+7   SISTEMA 109 110 116 54.48 129           192</code></pre>
+</div>
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>        AFP    A_Perc    B_Perc    C_Perc    D_Perc    E_Perc
+1   CAPITAL 0.5515152 0.5393939 0.5939394 0.2477576 0.6484848
+2    CUPRUM 0.5677083 0.5781250 0.6041667 0.2863542 0.6666667
+3   HABITAT 0.5677083 0.5677083 0.5989583 0.3140625 0.6875000
+4    MODELO 0.5514706 0.5441176 0.5514706 0.2402206 0.6617647
+5 PLANVITAL 0.5625000 0.5677083 0.5989583 0.2623958 0.6562500
+6   PROVIDA 0.5572917 0.5625000 0.6093750 0.2677604 0.6614583
+7   SISTEMA 0.5677083 0.5729167 0.6041667 0.2837500 0.6718750</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="1248"></p>
+</div>
+</div>
+<p>Ahora nos interesaría ver como han reaccionado los fondos a los diversos sucesos de los últimos años, como la crisis financiera del 2008, el estallido social en 2019, la pandemia de coronavirus en el 2020, entre otros.</p>
+<p>Comenzamos con la crisis financiera:</p>
+<p>Se observa, que este año fue bastante malo para ambos fondos en general, pero el fondo A se vió mucho más afectado, esto se puede deber a las inversiones más arriesgadas en el extranjero, mientras tanto, el fondo E percibió pérdidas tales de un mes malo normal, así que esta crisis, al originarse en el extranjero, afectó mucho más al fondo A, que perdió casi dos años de ganancias, y todavía se situaría en una posición bastante mala en los meses siguientes.</p>
+<p>Para la fecha en particular del terremoto, no se ve que haya mucho efecto en los rendimientos de estos fondos, pero el fondo A se mostró más errático de lo normal e impredecible, aún así, reportó muchas ganancias en varios meses, al igual que el fondo E, que casi no reportó meses malos, aparte de la caída en mayo del fondo A, esta crisis no lo afectó casi en nada en comparación a la crisis subprime, de alguna manera, las pérdidas materiales provocadas por el terremoto, no sacudieron tanto a los activos financieros, probablemente alguna devaluación del peso, le haya otorgado ganancias al fondo A, con el intercambio de divisas.</p>
+<p>Este año en particular, es el primero en el cual el fondo E, ha tenido pérdidas muy fuera de lo común, mientras que en los meses posteriores al estallido, logró recuperarse, mientras el fondo A obtenía ganancias bastante altas, tenemos otro caso de una crisis nacional, que afecta mucho más al fondo E, y que termina siendo un año muy bueno para el fondo A, hasta la llegada de diciembre, que trae consigo números negativos para el fondo A, en términos generales, tanto las pérdidas como ganancias para ambos fondos no sufrieron cambios muy drásticos, y el efecto en los fondos de este suceso, están muy lejos del nivel de la crisis financiera.</p>
+<p>Acá tenemos una crisis que comenzó siendo internacional, llegando al país eventualmente, los cierres de fronteras y los toques de queda, pudieron haber tenido mucha incidencia en las pérdidas iniciales del fondo A, al desacelerar la economía de la mayoría de los países en el extranjero, entonces la pandemia afectó mucho más al fondo A que al E, aunque finalmente el primero logró recuperarse, esto podría ser debido al alza de las empresas farmacéuticas y de tecnología, en general, el fondo E tuvo un año bastante regular, y el fondo A solo logró quedar en igualdad de condiciones luego de muchos meses, así que nuevamente nos encontramos con un suceso internacional, que tiene un efecto mucho más grande en el fondo A que en el fondo E.</p>
+</section>
+<section id="conclusión" class="level1">
+<h1><strong>Conclusión</strong></h1>
+<p>Luego de haber analizado los gráficos, podemos concluir que en su mayoría, las crisis internacionales afectan muy negativamente al fondo A, mientras que los sucesos que ocurren en nuestro país, no generan mucho efecto en sus rentabilidades, lo que es contrario al fondo E, que es muy reactivo a las tragedias nacionales, además podemos observar la gran diferencia de ganancias que hay entre ambos fondos, ya que a pesar de tener pérdidas exageradas, el fondo A siempre logra recuperarse, y los años que han resultado terribles para este, sin incluir la crisis financiera, simplemente lo han dejado sin ganancias, o con unas pérdidas que no superan al 5%, esto nos da información importante para decidir el nivel de riesgo a elegir en un fondo, ya que mientras superior sea el lapso de tiempo, mayor es la diferencia de rentabilidades que hay, y que a pesar de que las cosas no estén bien en el país, podemos seguir aumentando nuestro patrimonio.</p>
+<p>Sobre los AFPs en particular, no es muy relevante cual, ya que las comisiones no son tan altas, y en fondos similares, la mayoría reportan cantidades de meses positivos similares, y ganancias relativamente parecidas, así que no son tan relevantes para nuestro caso.</p>
+<p>Dando un último vistazo a los gráficos, ya que analizamos la correlación entre los dos fondos, esto se puede observar en la diferencia de variabilidad de los dos datos, ya que son gráficos parecidos, donde el fondo A tiene movimientos mucho más bruscos, y erráticos, mientras que el fondo E representa una versión mucho más pareja de la curva, con menos fluctuaciones.</p>
+</section>
+<section id="anexo" class="level1">
+<h1><strong>Anexo</strong></h1>
+<p>[1] <a href="https://afiliadoinformado.cl/wp-content/uploads/2018/06/12_FondodePensiones.pdf">Fondo de Pensiones</a></p>
+<p>[2] <a href="https://www.spensiones.cl/apps/rentabilidad/getRentabilidad.php?tiprent=FP&amp;template=0">Rentabilidades</a></p>
+<p>[3] <a href="https://github.com/DiegoGR2021/proyecto_let0010_1/blob/main/codigo/web_scraperdef.py">Web-Scraping</a></p>
 </section>
 
 </main>
