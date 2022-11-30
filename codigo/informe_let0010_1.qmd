@@ -1,0 +1,449 @@
+---
+title: "Análisis de la Rentabilidad Real de los Fondos de Pensiones"
+author: "Diego Gallo"
+format: html
+editor: visual
+---
+
+```{r, echo = FALSE, include = FALSE}
+library(egg)
+library(forecast)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(plyr)
+library(rio)
+library(tidyverse)
+library(MASS)
+library(moments)
+library(reshape2)
+
+fn = local({
+  lll = 0
+  function(x) {
+    lll <<- lll + 1
+    paste('Figura ', lll, ': ', x, sep = '')
+  }
+})
+
+tn = local({
+  ooo = 0
+  function(y) {
+    ooo <<- ooo + 1
+    paste('Tabla ', ooo, ': ', y, sep = '')
+  }
+})
+
+normality_plots = function(data){
+  par(mfrow = c(1, 3))
+
+  hist(data, main = fn("Histograma"), xlab = "", ylab = "Frecuencia")
+
+  qqnorm(data, main = fn("Gráfico Q-Q Normal"), xlab = "Cantidades Teóricas", ylab = "Cuantiles Muestrales")
+  qqline(data, col = "red") 
+
+  plot(ecdf(data), main = fn("Función de Distribución Empírica"), xlab = "", ylab = "")
+}
+
+residual_diagnostic = function(mod){
+
+  res = mod$residuals/sd(mod$residuals)
+
+  par(mfrow = c(1, 3))
+
+  hist(res, main = fn("Histograma"), xlab = "Residuales Estandarizados", ylab = "Frecuencia")
+
+  qqnorm(res, main = fn("Gráfico Q-Q Normal"), xlab = "Cantidades Teóricas", ylab = "Cuantiles Muestrales")
+  qqline(res, col = "blue") 
+
+  plot(ecdf(res), main = fn("Función de Distribución Empírica"),xlab = "Residuales Estandarizados", ylab = "")
+}
+
+set.seed(22091998)
+```
+
+# **Introducción**
+
+Uno de los aspectos que me resulta más interesante respecto a los polémicos fondos de pensiones en Chile, es su funcionamiento y cómo se ven afectados por acontecimientos tanto internacionales, como los que ocurren en nuestra propia patria, y para eso, necesitamos saber qué son específicamente, los fondos que hay, y las AFP que existen.
+
+# **Contexto**
+
+Las administradoras de fondos de pensiones, o mejor conocidas como A.F.P, son instituciones financieras encargadas de administrar los fondos de cuentas individuales de ahorro para pensiones, entonces corresponden a un patrimonio constituido por todas la cotizaciones obligatorias y voluntarias que efectúan los trabajadores en su cuenta de capitalización individual, más depósitos voluntarios, y aportes adicionales, junto a las rentabilidades de sus respectivas inversiones, restando las comisiones que cobran la administradora.
+
+Existen 5 alternativas de inversión, denominados fondos de pensiones tipo A, B, C, D y E, estos se diferencian en la proporción de los recursos financieros invertidos en renta variable y renta fija, en donde los primeros representan propiedad de una sociedad o empresa, tales como acciones, por ende tienen mayor riesgo y rentabilidad esperada, los segundos tienen una rentabilidad conocida que varía de acuerdo a su valor de mercado, y tienen menor riesgo y menos rentabilidad esperada.
+
+De los 5 fondos antes mencionados, el fondo A tiene una mayor proporción invertida en renta variable, que disminuye a medida que nos acercamos a los fondos B, C, y D, y finalmente el fondo E, invierte principalmente en renta fija.
+
+Actualmente las inversiones se rigen por los siguientes máximos y mínimos para instrumentos de renta variable:
+
+Fondo A: Máximo = 80%, Mínimo obligatorio = 40%
+
+Fondo B: Máximo = 60%, Mínimo obligatorio = 25%
+
+Fondo C: Máximo = 40%, Mínimo obligatorio = 15%
+
+Fondo D: Máximo = 20%, Mínimo obligatorio = 5%
+
+Fondo E: Máximo = 5%, Mínimo obligatorio = 0%
+
+# **Objetivos**
+
+Ahora conociendo el contexto de las AFP, y sus rasgos generales de inversión, podemos plantearnos las siguientes preguntas:
+
+¿Cuál de las AFP presenta mejores resultados?.
+
+¿Qué tanto afectó a las AFP la crisis subprime del 2008?.
+
+¿Qué tan mal dejó a las AFP el terremoto del 2010?.
+
+¿Cómo se vieron afectadas las rentabilidades de las AFP por el estallido social ocurrido en octubre de 2019?.
+
+¿Cómo ha afectado la pandemia del 2020 a las rentabilidades de las AFP?, ¿Fue negativo el impacto?.
+
+¿Qué fondos se ven menos afectados por los problemas nacionales?.
+
+¿Qué fondos se ven menos afectados por problemáticas internacionales?.
+
+Entonces además de observar el rendimiento de los distintos fondos y las distintas AFP, vamos a verlo en perspectiva histórica, para observar como se comporta su rentabilidad a lo largo de los años, haciendo énfasis en algunos años clave.
+
+# **Datos**
+
+Desde la página de la superintendencia de pensiones, podemos encontrar una serie de tablas con las rentabilidades de los distintos tipos de fondos, y tipos de AFP, los cuales podemos seleccionar por mes y año, desde el año 2005 hasta hoy, para motivos de mi informe, desecharé el año 2005 ya que tiene demasiados valores faltantes.
+
+Para poder comenzar, ya que la página no nos permite descargar ningún documento con los datos y además todas las selecciones cuentan con la misma url, usando "web-scraping", obtendremos los datos de la primera y segunda columna de cada tabla, pues contienen el nombre de la AFP y su rentabilidad obtenida es mes y año respectivos, por ende haciendo uso de Python, y con ayuda de los paquetes (BeautifulSoup, Chromedriver, Selenium, Pandas, Time).
+
+Debido a la gran cantidad de iteraciones que debe hacer el documento, no lo incluiré de manera funcional en el informe, el link se puede encontrar en el anexo.
+
+Así ya disponemos de una base de datos que podemos importar, he sido cuidadoso a la hora de definir los tipos de cada variable, guardar los números en formato float, y variables categóricas como string, también reemplacé las comas por puntos, datos vacíos por 0.0 (float) y eliminé los símbolos %, por lo que no será necesario limpiar los datos.
+
+A la hora de hacer el análisis, se filtrarán los datos según se requiera, y se eliminaran AFPs con pocas observaciones y se usarán fondos representativos de ser necesarios.
+
+Descripción inicial de las variables en el archivo rentabilidad_afps:
+
+| Variable | Tipo            | Descripción          |
+|----------|-----------------|----------------------|
+| A.F.P.   | Cadena de texto | Nombre de la AFP     |
+| A        | Punto flotante  | Rentabilidad Fondo A |
+| B        | Punto flotante  | Rentabilidad Fondo B |
+| C        | Punto flotante  | Rentabilidad Fondo c |
+| D        | Punto flotante  | Rentabilidad Fondo D |
+| E        | Punto flotante  | Rentabilidad Fondo E |
+| Año      | Entero          | Año respectivo       |
+| Mes      | Cadena de texto | Mes respectivo       |
+
+Además, sea $X_t$ el valor del fondo en el momento t, tenemos que la rentabilidad porcentual es equivalente a :
+
+$$ \frac{X_t - X_{t-1}}{X_{t-1}} $$
+
+# **Resultados**
+
+```{r, echo = FALSE}
+datos = rio::import("C:/Users/Diego/Desktop/proyecto_let0010_1/datos/30-11-2021_rentabilidad_afps.xlsx")
+cor(datos[, 2:6])
+```
+
+Analizamos la correlación entre los valores de los distintos fondos, y podemos ver que los fondos que menos se parecen respecto a rentabilidades, son el A y el E, pues tienen una correlación bajísima, lo cuál es lógico, ya que sus niveles de riesgo y sus objetivos son muy distintos, así, en base a estos dos fondos, haré la mayor parte del análisis ya que son los que representan el blanco y el negro en las AFP.
+
+```{r, echo = FALSE }
+sqrt(diag(cov(datos[, 2:6])))
+```
+
+Consistente con los supuestos de la introducción, los fondos con más renta variable presentan mayor desviación estándar, y el fondo E tiene variabilidad mínima.
+
+```{r, include = FALSE}
+datos = rio::import("C:/Users/Diego/Desktop/proyecto_let0010_1/datos/30-11-2021_rentabilidad_afps.xlsx")
+retornos_capital_a = datos[datos$A.F.P. == "CAPITAL", ]
+retornos_capital_a = retornos_capital_a[c("A", "Año", "Mes")]
+retornos_capital_a$Mes = plyr::revalue(retornos_capital_a$Mes, c("Enero" = 1, "Febrero" = 2, "Marzo" = 3, "Abril" = 4, "Mayo" = 5, "Junio" = 6, "Julio" = 7, "Agosto" = 8, "Septiembre" = 9, "Octubre" = 10, "Noviembre" = 11, "Diciembre" = 12))
+retornos_capital_a$Mes = as.numeric(retornos_capital_a$Mes)
+retornos_capital_a$Año = as.numeric(retornos_capital_a$Año)
+
+retornos_capital_a$t = retornos_capital_a$Año + (retornos_capital_a$Mes - 1)/12
+new_ret = retornos_capital_a[c("t", "A")]
+
+new_rets = arrange(new_ret, t)
+```
+
+Para la primera revisión de los datos, usaremos particularmente las rentabilidades del Fondo A de AFP Capital, inicialmente nos interesa saber como se comportan sus momentos, y como ha progresado la rentabilidad a lo largo del tiempo, también queremos observar si la serie tiene rasgos estacionarios, y ver si estos se podrían extrapolar a las demás AFPS y fondos.
+
+```{r, fig.height=8, fig.width=13, echo = FALSE }
+ggplot(retornos_capital_a, aes(x = t, y = A)) +
+  geom_line(color = "blue") +
+  ggtitle(fn("Retornos mensuales de AFP Capital Fondo A, período 2008-2021")) + xlab("Año") + ylab("Retornos")
+```
+
+Como podemos observar en la Figura 1, las rentabilidades presentan una alta volatilidad, y parecieran tener una media bastante cercana a 0, también son notorias las caídas en los períodos 2008-2009 y 2020, que calzan con la crisis económica del 2008 y la pandemia COVID.
+
+```{r, echo = FALSE }
+ggAcf(new_rets$A, lag.max = 20) +
+  ggtitle(fn("Autocorrelación de los retornos del Fondo A Capital"))
+```
+
+Tenemos que los datos no tienen una estructura de correlación notoria, lo que es habitual en los datos financieros, por lo que es necesario analizar los retornos al cuadrado:
+
+```{r, echo = FALSE }
+ggAcf(new_rets$A^2, lag.max = 20) +
+  ggtitle(fn("Autocorrelación de los retornos al cuadrado del Fondo A Capital"))
+```
+
+Se puede observar una estructura de correlación, pero no tenemos suficiente evidencia como para sacar alguna conclusión, ahora es importante analizar si es que los datos tienen alguna distribución en particular, y como se comportan sus momentos:
+
+```{r, echo = FALSE }
+ggplot(retornos_capital_a, aes(x = A)) +
+  geom_histogram(aes(y = ..density..), colour = 1, fill = "white") +
+  geom_density() +
+  labs(title = fn("Histrograma"), y = "Densidad", x = "Rentabilidad Real")
+```
+
+Observamos una distribución con ciertos indicios de normalidad, pero con un sesgo muy marcado, y probablemente altos niveles de curtosis, ya que las colas representan mucho % de la figura, por lo que la normalidad de las rentabilidades está descartada, para ajustar un modelo probablemente sea necesario hacer transformaciones o cambiar el enfoque del análisis.
+
+```{r, echo = FALSE, fig.width=12, fig.height=5}
+normality_plots(retornos_capital_a$A)
+```
+ Cómo era de esperar, tenemos una desviación muy grande de la normalidad, ningún cuantil en particular con buena alineación con la distribución normal, un histograma muy sesgado, y con las colas bastante pesadas, por lo que los métodos de regresión usuales quedarían descartados.
+
+```{r, echo = FALSE }
+datos2 = rio::import("C:/Users/Diego/Desktop/proyecto_let0010_1/datos/30-11-2021_rentabilidad_afps.xlsx")
+afps = unique(datos2$A.F.P.)
+paste("AFP", "A", "B", "C", "D", "E")
+for (i in 1:length(afps)){
+  afp_temp = datos2 %>%
+    filter(A.F.P. == afps[i])
+  print(paste(afps[i], round(mean(afp_temp$A), 3), round(mean(afp_temp$B), 3), round(mean(afp_temp$C), 3), round(mean(afp_temp$D), 3), round(mean(afp_temp$E), 3)))
+}
+```
+En la tabla anterior tenemos los retornos promedios de cada AFP en cada fondo, y tenemos algunos datos anormales, BANSANDER, UNO, SANTA MARIA, ya que tienen rentabilidades demasiado altas en comparación al resto de las AFP, y el resto no presenta muchas diferencias significativas, se ve que sus rentabilidades están en un rango bastante común.
+
+Otra medida importante con la que podemos comparar fondos, es su cantidad de meses positivos sobre los meses totales que ejercieron, así primero obtenemos los meses que ejercieron cada AFP:
+
+```{r, echo = FALSE }
+paste("AFP", "N Obs")
+for (i in 1:length(afps)){
+  afp_temp = datos2 %>%
+    filter(A.F.P. == afps[i])
+  print(paste(afps[i], nrow(afp_temp)))
+}
+```
+Inmediatamente descartamos Bansander y Santa Maria, ya que están discontinuadas, tampoco ejercieron por mucho tiempo, por lo que podrían haber estado funcionando en años donde les fue mal a todas, y haber esquivado algunas crisis, haremos lo mismo con AFP UNO, puesto que tenemos muy pocos datos en comparación a las demás.
+
+```{r, echo = FALSE }
+new_afps = subset(datos2, !(A.F.P. %in% c("UNO", "BANSANDER", "SANTA MARIA")))
+afps_new = unique(new_afps$A.F.P.)
+
+rents_promedio = data.frame(matrix(ncol = 6, nrow = 7))
+
+paste("AFP", "   " , "A", "   ", "B", "    " ,"C", "    ", "D", "    ", "E")
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+    filter(A.F.P. == afps_new[i])
+  rents_promedio[i, ] = c(afps_new[i], round(mean(afp_temp$A), 3), round(mean(afp_temp$B),3), round(mean(afp_temp$C),3), round(mean(afp_temp$D),3), round(mean(afp_temp$E), 3))
+}
+
+
+colnames(rents_promedio) = c("AFP", "A", "B", "C", "D", "E")
+rents_promedio
+```
+Ahora con las tablas más limpias, vemos que tienen resultados bastante similares las AFPS entre sí, y seguimos con tendencias muy similares a las observadas inicialmente, menores rentabilidades en los fondos más bajos, y mayores en los más altos.
+
+Para el resto del análisis, usaremos AFP Capital, para evitar redundancia.
+
+```{r, echo = FALSE }
+new_afps$Mes = plyr::revalue(new_afps$Mes, c("Enero" = 1, "Febrero" = 2, "Marzo" = 3, "Abril" = 4, "Mayo" = 5, "Junio" = 6, "Julio" = 7, "Agosto" = 8, "Septiembre" = 9, "Octubre" = 10, "Noviembre" = 11, "Diciembre" = 12))
+new_afps$Mes = as.numeric(new_afps$Mes)
+new_afps$Año = as.numeric(new_afps$Año)
+
+new_afps$t = new_afps$Año + (new_afps$Mes - 1)/12
+new_afps_melt = melt(new_afps, id = c("A.F.P.", "Año", "Mes", "t"))
+capital_long = filter(new_afps_melt, A.F.P. == "CAPITAL")
+capital_wide = filter(new_afps, A.F.P. == "CAPITAL")
+```
+
+```{r, fig.height=8, fig.width=13, echo = FALSE }
+ggplot(capital_long, aes(x = t, y = value)) +
+  geom_line(aes(color = variable, linetype = variable)) +
+  labs(title = fn("Rentabilidades de los distintos fondos en AFP Capital"))
+```
+ Podemos observar que los fondos tienen tendencias similares en movimientos, pero se diferencian por su volatilidad, en particular tenemos que para el período 2008-2009, a todos los fondos les afectó la recesión, siendo la magnitud del efecto distinto, el fondo A recibió un golpe horrible, mietras que el fondo E tuvo solamente una disminución pequeña, un caso especial es la épica covid, pues vemos que los fondos se comportaron muy similarmente, por lo tanto no sería una locura pensar que la pandemia tuvo un efecto similar en todos los fondos, en la siguiente figura se nos presenta este mismo efecto pero desagregado:
+
+```{r, fig.height=8, fig.width=13, echo = FALSE, include = FALSE}
+a = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(paste("SD=", sd(capital_wide$A))), y = "Fondo A")
+b = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = B)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(paste("SD=", sd(capital_wide$B))), y = "Fondo B")
+c = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = C)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(paste("SD=", sd(capital_wide$C))), y = "Fondo C")
+d = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = D)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(paste("SD=", sd(capital_wide$D))), y = "Fondo D")
+e = ggplot(capital_wide, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(paste("SD=", sd(capital_wide$E))), y = "Fondo E")
+arr = ggarrange(a, b, c, d, e)
+```
+
+```{r, fig.height=8, fig.width=13, echo = FALSE}
+arr
+```
+
+
+```{r, echo = FALSE}
+meses_positivos = data.frame(matrix(ncol = 7, nrow = 7))
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+    filter(A.F.P. == afps_new[i])
+  meses_positivos[i, ] = c(afps_new[i], sum(afp_temp$A > 0), sum(afp_temp$B > 0), sum(afp_temp$C > 0),  sum(afp_temp$D), sum(afp_temp$E > 0), nrow(afp_temp))
+}
+
+colnames(meses_positivos) = c("AFP", "A", "B", "C", "D", "E", "Meses_Totales")
+meses_positivos
+```
+
+```{r, echo = FALSE}
+meses_perc = meses_positivos %>%
+  mutate(A_Perc = as.numeric(A)/as.numeric(Meses_Totales),
+         B_Perc = as.numeric(B)/as.numeric(Meses_Totales),
+         C_Perc = as.numeric(C)/as.numeric(Meses_Totales),
+         D_Perc = as.numeric(D)/as.numeric(Meses_Totales),
+         E_Perc = as.numeric(E)/as.numeric(Meses_Totales))
+
+meses_perc[, c(1, 8:12)]
+```
+Nuevamente nos encontramos con diferencias muy leves de un fondo al otro, tenemos resultados similares de meses positivos, rentabilidades promedios, ¿qué otra diferencia podría ser importante?
+
+Tenemos que las AFPS cobran comisiones que dependen de la renta imponible de los usuarios, ya que no tenemos diferencias significativas en las rentabilidades promedios ni el % de meses positivos, las diferenciaremos por su comisión:
+
+
+|  A.F.P.  |      % Comisión |   
+|----------|-----------------|
+| CAPITAL  |            1.44 |
+| CUPRUM   |            1.44 |
+| HABITAT  |            1.27 |
+| MODELO   |            0.58 | 
+| PLANVITAL|            1.16 | 
+| PROVIDA  |            1.45 |
+
+Tabla de comisiones de las AFPS para Noviembre 2022 (Fuente 4 en el Anexo)
+
+Tenemos que todas las comisiones son bastante bajas <2%, pero el % de la AFP Modelo es mucho más bajo, por lo que la tendremos en consideración.
+
+Ahora nos interesaría ver como han reaccionado los fondos a los diversos sucesos de los últimos años, como la crisis financiera del 2008, el estallido social en 2019, la pandemia de coronavirus en el 2020, entre otros.
+
+## Fondo A
+
+### Época 2007-2010 (Crisis Subprime)
+
+```{r, fig.height=8, fig.width=13, echo = FALSE}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2007) %>%
+  filter(t <= 2010)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(afps_new[i]))
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp)
+```
+### Época 2019-2021 (Covid)
+
+```{r, fig.height=8, fig.width=13, echo = FALSE}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2019) %>%
+  filter(t <= 2021)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(afps_new[i]), y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+}
+
+### Epoca 2021-Actualidad
+
+```{r, fig.height=8, fig.width=13, echo = FALSE}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2021)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = A)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(afps_new[i]), y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+
+## Fondo E
+
+### Época 2007-2010 (Crisis Subprime)
+
+```{r, fig.height=8, fig.width=13, echo = FALSE}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2007) %>%
+  filter(t <= 2010)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(afps_new[i]), y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+
+### Época 2019-2021 (Covid)
+
+```{r, fig.height=8, fig.width=13, echo = FALSE}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2019) %>%
+  filter(t <= 2021)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(afps_new[i]))
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+### Época 2021-Actualidad
+
+```{r, fig.height=8, fig.width=13, echo = FALSE}
+arr_temp = list()
+for (i in 1:length(afps_new)){
+  afp_temp = new_afps %>%
+  filter(A.F.P. == afps_new[i]) %>%
+  filter(t >= 2021)
+  plot_temp = ggplot(afp_temp, aes(x = t)) + geom_line(aes(y = E)) + geom_hline(yintercept = 0, colour = "red") +
+  labs(title = fn(afps_new[i]), y = "")
+  arr_temp[[i]] = plot_temp
+}
+do.call(grid.arrange, arr_temp) 
+```
+Comenzamos con la crisis financiera:
+
+Se observa, que este año fue bastante malo para ambos fondos en general, pero el fondo A se vió mucho más afectado, esto se puede deber a las inversiones más arriesgadas en el extranjero, mientras tanto, el fondo E percibió pérdidas tales de un mes malo normal, así que esta crisis, al originarse en el extranjero, afectó mucho más al fondo A, que perdió casi dos años de ganancias, y todavía se situaría en una posición bastante mala en los meses siguientes.
+
+Para la fecha en particular del terremoto, no se ve que haya mucho efecto en los rendimientos de estos fondos, pero el fondo A se mostró más errático de lo normal e impredecible, aún así, reportó muchas ganancias en varios meses, al igual que el fondo E, que casi no reportó meses malos, aparte de la caída en mayo del fondo A, esta crisis no lo afectó casi en nada en comparación a la crisis subprime, de alguna manera, las pérdidas materiales provocadas por el terremoto, no sacudieron tanto a los activos financieros, probablemente alguna devaluación del peso, le haya otorgado ganancias al fondo A, con el intercambio de divisas.
+
+Este año en particular, es el primero en el cual el fondo E, ha tenido pérdidas muy fuera de lo común, mientras que en los meses posteriores al estallido, logró recuperarse, mientras el fondo A obtenía ganancias bastante altas, tenemos otro caso de una crisis nacional, que afecta mucho más al fondo E, y que termina siendo un año muy bueno para el fondo A, hasta la llegada de diciembre, que trae consigo números negativos para el fondo A, en términos generales, tanto las pérdidas como ganancias para ambos fondos no sufrieron cambios muy drásticos, y el efecto en los fondos de este suceso, están muy lejos del nivel de la crisis financiera.
+
+Acá tenemos una crisis que comenzó siendo internacional, llegando al país eventualmente, los cierres de fronteras y los toques de queda, pudieron haber tenido mucha incidencia en las pérdidas iniciales del fondo A, al desacelerar la economía de la mayoría de los países en el extranjero, entonces la pandemia afectó mucho más al fondo A que al E, aunque finalmente el primero logró recuperarse, esto podría ser debido al alza de las empresas farmacéuticas y de tecnología, en general, el fondo E tuvo un año bastante regular, y el fondo A solo logró quedar en igualdad de condiciones luego de muchos meses, así que nuevamente nos encontramos con un suceso internacional, que tiene un efecto mucho más grande en el fondo A que en el fondo E.
+
+# **Conclusión**
+
+Sobre los AFPs en particular, a primer instancia no es muy relevante cual ya en fondos similares, la mayoría reportan cantidades de meses positivos similares, y ganancias relativamente parecidas, pero es destacable que la AFP Modelo tiene la comisión más baja de las reportadas ~0.98%, por lo que teniendo en cuenta los resultados anteriores, sería nuestra AFP a elegir.
+
+Luego de haber analizado los gráficos, podemos concluir que en su mayoría, las crisis internacionales afectan muy negativamente al fondo A, mientras que los sucesos que ocurren en nuestro país, no generan mucho efecto en sus rentabilidades, lo que es contrario al fondo E, que es muy reactivo a las tragedias nacionales, además podemos observar la gran diferencia de ganancias que hay entre ambos fondos, ya que a pesar de tener pérdidas exageradas, el fondo A siempre logra recuperarse, y los años que han resultado terribles para este, sin incluir la crisis financiera, simplemente lo han dejado sin ganancias, o con unas pérdidas que no superan al 5%, esto nos da información importante para decidir el nivel de riesgo a elegir en un fondo, ya que mientras superior sea el lapso de tiempo, mayor es la diferencia de rentabilidades que hay, y que a pesar de que las cosas no estén bien en el país, podemos seguir aumentando nuestro patrimonio.
+
+# **Anexo**
+
+\[1\] [Fondo de Pensiones](https://afiliadoinformado.cl/wp-content/uploads/2018/06/12_FondodePensiones.pdf)
+
+\[2\] [Rentabilidades](https://www.spensiones.cl/apps/rentabilidad/getRentabilidad.php?tiprent=FP&template=0)
+
+\[3\] [Web-Scraping](https://github.com/DiegoGR2021/proyecto_let0010_1/blob/main/codigo/web_scraperdef.py)
+
+\[4\] [Comisiones](https://www.spensiones.cl/apps/estcom/estcom.php?fecha=20221101)
