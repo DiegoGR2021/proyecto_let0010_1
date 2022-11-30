@@ -208,22 +208,28 @@ i Please use `after_stat(density)` instead.</code></pre>
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Observamos una distribución con ciertos indicios de normalidad, pero con un sesgo muy marcado,, y probablemente altos niveles de kurtosis, ya que las colas representan mucho % de la figura, por lo que la normalidad de las rentabilidades está descartada, para ajustar un modelo probablemente sea necesario hacer transformaciones o cambiar el enfoque del análisis.</p>
+<p>Observamos una distribución con ciertos indicios de normalidad, pero con un sesgo muy marcado, y probablemente altos niveles de curtosis, ya que las colas representan mucho % de la figura, por lo que la normalidad de las rentabilidades está descartada, para ajustar un modelo probablemente sea necesario hacer transformaciones o cambiar el enfoque del análisis.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="1152"></p>
+</div>
+</div>
+<p>Cómo era de esperar, tenemos una desviación muy grande de la normalidad, ningún cuantil en particular con buena alineación con la distribución normal, un histograma muy sesgado, y con las colas bastante pesadas, por lo que los métodos de regresión usuales quedarían descartados.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "AFP A B C D E"</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "CAPITAL 0.400606060606061 0.353454545454545 0.319636363636364 0.247757575757576 0.224242424242424"
-[1] "CUPRUM 0.453489583333333 0.401979166666667 0.365364583333333 0.286354166666667 0.232447916666667"
-[1] "HABITAT 0.481145833333333 0.4384375 0.397447916666667 0.3140625 0.26140625"
-[1] "MODELO 0.465147058823529 0.383676470588235 0.302794117647059 0.240220588235294 0.176029411764706"
-[1] "PLANVITAL 0.45890625 0.403802083333333 0.34625 0.262395833333333 0.192552083333333"
-[1] "PROVIDA 0.456302083333333 0.398020833333333 0.33859375 0.267760416666667 0.20453125"
-[1] "UNO 0.675185185185185 0.455555555555556 0.08 -0.242962962962963 -0.504444444444444"
-[1] "SISTEMA 0.4609375 0.41046875 0.362604166666667 0.28375 0.236822916666667"
-[1] "BANSANDER 0.828518518518519 0.717407407407407 0.585925925925926 0.469259259259259 0.461851851851852"
-[1] "SANTA MARIA 0.758148148148148 0.723333333333333 0.594074074074074 0.482962962962963 0.40037037037037"</code></pre>
+<pre><code>[1] "CAPITAL 0.401 0.353 0.32 0.248 0.224"
+[1] "CUPRUM 0.453 0.402 0.365 0.286 0.232"
+[1] "HABITAT 0.481 0.438 0.397 0.314 0.261"
+[1] "MODELO 0.465 0.384 0.303 0.24 0.176"
+[1] "PLANVITAL 0.459 0.404 0.346 0.262 0.193"
+[1] "PROVIDA 0.456 0.398 0.339 0.268 0.205"
+[1] "UNO 0.675 0.456 0.08 -0.243 -0.504"
+[1] "SISTEMA 0.461 0.41 0.363 0.284 0.237"
+[1] "BANSANDER 0.829 0.717 0.586 0.469 0.462"
+[1] "SANTA MARIA 0.758 0.723 0.594 0.483 0.4"</code></pre>
 </div>
 </div>
 <p>En la tabla anterior tenemos los retornos promedios de cada AFP en cada fondo, y tenemos algunos datos anormales, BANSANDER, UNO, SANTA MARIA, ya que tienen rentabilidades demasiado altas en comparación al resto de las AFP, y el resto no presenta muchas diferencias significativas, se ve que sus rentabilidades están en un rango bastante común.</p>
@@ -251,13 +257,14 @@ i Please use `after_stat(density)` instead.</code></pre>
 <pre><code>[1] "AFP     A     B      C      D      E"</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "CAPITAL 0.400606060606061 0.353454545454545 0.319636363636364 0.247757575757576 0.224242424242424"
-[1] "CUPRUM 0.453489583333333 0.401979166666667 0.365364583333333 0.286354166666667 0.232447916666667"
-[1] "HABITAT 0.481145833333333 0.4384375 0.397447916666667 0.3140625 0.26140625"
-[1] "MODELO 0.465147058823529 0.383676470588235 0.302794117647059 0.240220588235294 0.176029411764706"
-[1] "PLANVITAL 0.45890625 0.403802083333333 0.34625 0.262395833333333 0.192552083333333"
-[1] "PROVIDA 0.456302083333333 0.398020833333333 0.33859375 0.267760416666667 0.20453125"
-[1] "SISTEMA 0.4609375 0.41046875 0.362604166666667 0.28375 0.236822916666667"</code></pre>
+<pre><code>        AFP     A     B     C     D     E
+1   CAPITAL 0.401 0.353  0.32 0.248 0.224
+2    CUPRUM 0.453 0.402 0.365 0.286 0.232
+3   HABITAT 0.481 0.438 0.397 0.314 0.261
+4    MODELO 0.465 0.384 0.303  0.24 0.176
+5 PLANVITAL 0.459 0.404 0.346 0.262 0.193
+6   PROVIDA 0.456 0.398 0.339 0.268 0.205
+7   SISTEMA 0.461  0.41 0.363 0.284 0.237</code></pre>
 </div>
 </div>
 <p>Ahora con las tablas más limpias, vemos que tienen resultados bastante similares las AFPS entre sí, y seguimos con tendencias muy similares a las observadas inicialmente, menores rentabilidades en los fondos más bajos, y mayores en los más altos.</p>
@@ -267,29 +274,13 @@ i Please use `after_stat(density)` instead.</code></pre>
 </div>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="1248"></p>
-</div>
-</div>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>adding dummy grobs</code></pre>
-</div>
-<div class="cell-output-display">
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
+<p>Podemos observar que los fondos tienen tendencias similares en movimientos, pero se diferencian por su volatilidad, en particular tenemos que para el período 2008-2009, a todos los fondos les afectó la recesión, siendo la magnitud del efecto distinto, el fondo A recibió un golpe horrible, mietras que el fondo E tuvo solamente una disminución pequeña, un caso especial es la épica covid, pues vemos que los fondos se comportaron muy similarmente, por lo tanto no sería una locura pensar que la pandemia tuvo un efecto similar en todos los fondos, en la siguiente figura se nos presenta este mismo efecto pero desagregado:</p>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_bin()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 2 rows containing non-finite values (`stat_density()`).</code></pre>
-</div>
 <div class="cell-output-display">
-<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="1248"></p>
+<p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
 <div class="cell">
@@ -305,9 +296,6 @@ i Please use `after_stat(density)` instead.</code></pre>
 </div>
 </div>
 <div class="cell">
-
-</div>
-<div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>        AFP    A_Perc    B_Perc    C_Perc    D_Perc    E_Perc
 1   CAPITAL 0.5515152 0.5393939 0.5939394 0.2477576 0.6484848
@@ -319,54 +307,117 @@ i Please use `after_stat(density)` instead.</code></pre>
 7   SISTEMA 0.5677083 0.5729167 0.6041667 0.2837500 0.6718750</code></pre>
 </div>
 </div>
+<p>Nuevamente nos encontramos con diferencias muy leves de un fondo al otro, tenemos resultados similares de meses positivos, rentabilidades promedios, ¿qué otra diferencia podría ser importante?</p>
+<p>Tenemos que las AFPS cobran comisiones que dependen de la renta imponible de los usuarios, ya que no tenemos diferencias significativas en las rentabilidades promedios ni el % de meses positivos, las diferenciaremos por su comisión:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>A.F.P.</th>
+<th>% Comisión</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CAPITAL</td>
+<td>1.44</td>
+</tr>
+<tr class="even">
+<td>CUPRUM</td>
+<td>1.44</td>
+</tr>
+<tr class="odd">
+<td>HABITAT</td>
+<td>1.27</td>
+</tr>
+<tr class="even">
+<td>MODELO</td>
+<td>0.58</td>
+</tr>
+<tr class="odd">
+<td>PLANVITAL</td>
+<td>1.16</td>
+</tr>
+<tr class="even">
+<td>PROVIDA</td>
+<td>1.45</td>
+</tr>
+</tbody>
+</table>
+<p>Tabla de comisiones de las AFPS para Noviembre 2022 (Fuente 4 en el Anexo)</p>
+<p>Tenemos que todas las comisiones son bastante bajas &lt;2%, pero el % de la AFP Modelo es mucho más bajo, por lo que la tendremos en consideración.</p>
+<p>Ahora nos interesaría ver como han reaccionado los fondos a los diversos sucesos de los últimos años, como la crisis financiera del 2008, el estallido social en 2019, la pandemia de coronavirus en el 2020, entre otros.</p>
+<section id="fondo-a" class="level2">
+<h2 class="anchored" data-anchor-id="fondo-a">Fondo A</h2>
+<section id="época-2007-2010-crisis-subprime" class="level3">
+<h3 class="anchored" data-anchor-id="época-2007-2010-crisis-subprime">Época 2007-2010 (Crisis Subprime)</h3>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
+</section>
+<section id="época-2019-2021-covid" class="level3">
+<h3 class="anchored" data-anchor-id="época-2019-2021-covid">Época 2019-2021 (Covid)</h3>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
+<p>}</p>
+</section>
+<section id="epoca-2021-actualidad" class="level3">
+<h3 class="anchored" data-anchor-id="epoca-2021-actualidad">Epoca 2021-Actualidad</h3>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
+</section>
+</section>
+<section id="fondo-e" class="level2">
+<h2 class="anchored" data-anchor-id="fondo-e">Fondo E</h2>
+<section id="época-2007-2010-crisis-subprime-1" class="level3">
+<h3 class="anchored" data-anchor-id="época-2007-2010-crisis-subprime-1">Época 2007-2010 (Crisis Subprime)</h3>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
+</section>
+<section id="época-2019-2021-covid-1" class="level3">
+<h3 class="anchored" data-anchor-id="época-2019-2021-covid-1">Época 2019-2021 (Covid)</h3>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
+</section>
+<section id="época-2021-actualidad" class="level3">
+<h3 class="anchored" data-anchor-id="época-2021-actualidad">Época 2021-Actualidad</h3>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="informe_let0010_1_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="1248"></p>
 </div>
 </div>
-<p>Ahora nos interesaría ver como han reaccionado los fondos a los diversos sucesos de los últimos años, como la crisis financiera del 2008, el estallido social en 2019, la pandemia de coronavirus en el 2020, entre otros.</p>
 <p>Comenzamos con la crisis financiera:</p>
 <p>Se observa, que este año fue bastante malo para ambos fondos en general, pero el fondo A se vió mucho más afectado, esto se puede deber a las inversiones más arriesgadas en el extranjero, mientras tanto, el fondo E percibió pérdidas tales de un mes malo normal, así que esta crisis, al originarse en el extranjero, afectó mucho más al fondo A, que perdió casi dos años de ganancias, y todavía se situaría en una posición bastante mala en los meses siguientes.</p>
 <p>Para la fecha en particular del terremoto, no se ve que haya mucho efecto en los rendimientos de estos fondos, pero el fondo A se mostró más errático de lo normal e impredecible, aún así, reportó muchas ganancias en varios meses, al igual que el fondo E, que casi no reportó meses malos, aparte de la caída en mayo del fondo A, esta crisis no lo afectó casi en nada en comparación a la crisis subprime, de alguna manera, las pérdidas materiales provocadas por el terremoto, no sacudieron tanto a los activos financieros, probablemente alguna devaluación del peso, le haya otorgado ganancias al fondo A, con el intercambio de divisas.</p>
 <p>Este año en particular, es el primero en el cual el fondo E, ha tenido pérdidas muy fuera de lo común, mientras que en los meses posteriores al estallido, logró recuperarse, mientras el fondo A obtenía ganancias bastante altas, tenemos otro caso de una crisis nacional, que afecta mucho más al fondo E, y que termina siendo un año muy bueno para el fondo A, hasta la llegada de diciembre, que trae consigo números negativos para el fondo A, en términos generales, tanto las pérdidas como ganancias para ambos fondos no sufrieron cambios muy drásticos, y el efecto en los fondos de este suceso, están muy lejos del nivel de la crisis financiera.</p>
 <p>Acá tenemos una crisis que comenzó siendo internacional, llegando al país eventualmente, los cierres de fronteras y los toques de queda, pudieron haber tenido mucha incidencia en las pérdidas iniciales del fondo A, al desacelerar la economía de la mayoría de los países en el extranjero, entonces la pandemia afectó mucho más al fondo A que al E, aunque finalmente el primero logró recuperarse, esto podría ser debido al alza de las empresas farmacéuticas y de tecnología, en general, el fondo E tuvo un año bastante regular, y el fondo A solo logró quedar en igualdad de condiciones luego de muchos meses, así que nuevamente nos encontramos con un suceso internacional, que tiene un efecto mucho más grande en el fondo A que en el fondo E.</p>
 </section>
+</section>
+</section>
 <section id="conclusión" class="level1">
 <h1><strong>Conclusión</strong></h1>
+<p>Sobre los AFPs en particular, a primer instancia no es muy relevante cual ya en fondos similares, la mayoría reportan cantidades de meses positivos similares, y ganancias relativamente parecidas, pero es destacable que la AFP Modelo tiene la comisión más baja de las reportadas ~0.98%, por lo que teniendo en cuenta los resultados anteriores, sería nuestra AFP a elegir.</p>
 <p>Luego de haber analizado los gráficos, podemos concluir que en su mayoría, las crisis internacionales afectan muy negativamente al fondo A, mientras que los sucesos que ocurren en nuestro país, no generan mucho efecto en sus rentabilidades, lo que es contrario al fondo E, que es muy reactivo a las tragedias nacionales, además podemos observar la gran diferencia de ganancias que hay entre ambos fondos, ya que a pesar de tener pérdidas exageradas, el fondo A siempre logra recuperarse, y los años que han resultado terribles para este, sin incluir la crisis financiera, simplemente lo han dejado sin ganancias, o con unas pérdidas que no superan al 5%, esto nos da información importante para decidir el nivel de riesgo a elegir en un fondo, ya que mientras superior sea el lapso de tiempo, mayor es la diferencia de rentabilidades que hay, y que a pesar de que las cosas no estén bien en el país, podemos seguir aumentando nuestro patrimonio.</p>
-<p>Sobre los AFPs en particular, no es muy relevante cual, ya que las comisiones no son tan altas, y en fondos similares, la mayoría reportan cantidades de meses positivos similares, y ganancias relativamente parecidas, así que no son tan relevantes para nuestro caso.</p>
-<p>Dando un último vistazo a los gráficos, ya que analizamos la correlación entre los dos fondos, esto se puede observar en la diferencia de variabilidad de los dos datos, ya que son gráficos parecidos, donde el fondo A tiene movimientos mucho más bruscos, y erráticos, mientras que el fondo E representa una versión mucho más pareja de la curva, con menos fluctuaciones.</p>
 </section>
 <section id="anexo" class="level1">
 <h1><strong>Anexo</strong></h1>
 <p>[1] <a href="https://afiliadoinformado.cl/wp-content/uploads/2018/06/12_FondodePensiones.pdf">Fondo de Pensiones</a></p>
 <p>[2] <a href="https://www.spensiones.cl/apps/rentabilidad/getRentabilidad.php?tiprent=FP&amp;template=0">Rentabilidades</a></p>
 <p>[3] <a href="https://github.com/DiegoGR2021/proyecto_let0010_1/blob/main/codigo/web_scraperdef.py">Web-Scraping</a></p>
+<p>[4] <a href="https://www.spensiones.cl/apps/estcom/estcom.php?fecha=20221101">Comisiones</a></p>
 </section>
 
 </main>
